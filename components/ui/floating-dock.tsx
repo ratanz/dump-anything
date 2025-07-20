@@ -1,6 +1,5 @@
 "use client"
 import { cn } from "../../app/lib/utils";
-import { IconLayoutNavbarCollapse } from "@tabler/icons-react";
 import {
   AnimatePresence,
   MotionValue,
@@ -24,7 +23,7 @@ export const FloatingDock = ({
 }) => {
   return (
     <>
-      <FloatingDockDesktop items={items} className={desktopClassName} />
+      <FloatingDockDesktop items={items} className={cn(desktopClassName, "hidden md:flex")} />
       <FloatingDockMobile items={items} className={mobileClassName} />
     </>
   );
@@ -37,62 +36,52 @@ const FloatingDockMobile = ({
   items: { title: string; icon: React.ReactNode; href: string }[];
   className?: string;
 }) => {
-  const [open, setOpen] = useState(false);
-
-  const handleToggle = () => {
-    playClickSound();
-    setOpen(!open);
-  };
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   const handleItemClick = () => {
     playClickSound();
   };
 
   return (
-    <div className={cn("relative block md:hidden", className)}>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            layoutId="nav"
-            className="absolute inset-x-0 bottom-full mb-2 flex flex-col gap-2"
+    <motion.div
+      className={cn(
+        "mx-auto flex h-16 relative bottom- items-center justify-center gap-3 rounded-full bg-opacity-50 backdrop-blur-md bg-white/30 border border-white/40 px-4 md:hidden dark:bg-black/20 dark:border-white/20",
+        className,
+      )}
+    >
+      {items.map((item) => (
+        <motion.div
+          key={item.title}
+          className="relative flex items-center justify-center"
+          onMouseEnter={() => setHoveredItem(item.title)}
+          onMouseLeave={() => setHoveredItem(null)}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <a
+            href={item.href}
+            onClick={handleItemClick}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-white/40 backdrop-blur-md border border-white/20 dark:bg-black/40 dark:border-white/10"
           >
-            {items.map((item, idx) => (
+            <div className="flex items-center justify-center h-5 w-5">
+              {item.icon}
+            </div>
+          </a>
+          <AnimatePresence>
+            {hoveredItem === item.title && (
               <motion.div
-                key={item.title}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                exit={{
-                  opacity: 0,
-                  y: 10,
-                  transition: {
-                    delay: idx * 0.05,
-                  },
-                }}
-                transition={{ delay: (items.length - 1 - idx) * 0.05 }}
+                initial={{ opacity: 0, y: 10, x: "-50%" }}
+                animate={{ opacity: 1, y: 0, x: "-50%" }}
+                exit={{ opacity: 0, y: 2, x: "-50%" }}
+                className="absolute -top-8 left-1/2 w-fit rounded-md border border-white/20 bg-white/30 backdrop-blur-md px-2 py-0.5 text-xs whitespace-pre text-neutral-800 dark:border-white/10 dark:bg-black/30 dark:text-white"
               >
-                <a
-                  href={item.href}
-                  key={item.title}
-                  onClick={handleItemClick}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/30 backdrop-blur-md border border-white/20 dark:bg-black/30 dark:border-white/10"
-                >
-                  <div className="h-4 w-4">{item.icon}</div>
-                </a>
+                {item.title}
               </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <button
-        onClick={handleToggle}
-        className="flex h-10 w-10 items-center justify-center rounded-full bg-white/30 backdrop-blur-md border border-white/20 dark:bg-black/30 dark:border-white/10"
-      >
-        <IconLayoutNavbarCollapse className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-      </button>
-    </div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      ))}
+    </motion.div>
   );
 };
 
@@ -109,7 +98,7 @@ const FloatingDockDesktop = ({
       onMouseMove={(e) => mouseX.set(e.pageX)}
       onMouseLeave={() => mouseX.set(Infinity)}
       className={cn(
-        "mx-auto hidden h-16 items-end gap-4 rounded-full bg-opacity-50 backdrop-blur-md bg-white/30 border border-white/40 px-4 pb-3 md:flex dark:bg-black/20 dark:border-white/20",
+        "mx-auto h-16 items-end gap-4 rounded-full bg-opacity-50 backdrop-blur-md bg-white/30 border border-white/40 px-4 pb-3 dark:bg-black/20 dark:border-white/20",
         className,
       )}
     >

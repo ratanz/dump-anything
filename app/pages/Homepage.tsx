@@ -7,9 +7,9 @@ import { HomeIcon, ImageIcon, VideoIcon, FileIcon } from 'lucide-react'
 const Homepage = () => {
   return (
     <>
-    <div className='w-full min-h-screen flex flex-col md:pt-58 pt-54 px-4 justify-center items-center bg-gradient-to-bl from-zinc-200 via-blue-500 to-zinc-200'>
+    <div className='w-full h-screen flex flex-col md:pt-58 pt-44 px-4 items-center bg-gradient-to-bl from-zinc-200 via-blue-500 to-zinc-200'>
       <div className="text-container h-fit leading-tight">
-        <h1 className='text-[11vw] md:text-7xl'>A place to dump</h1>
+        <h1 className='text-[10vw] md:text-7xl'>A place to dump</h1>
 
         <div className="arrow flex items-center gap-2">
           <Image 
@@ -19,7 +19,7 @@ const Homepage = () => {
             height={10} 
             className="mt-2 w-[25vw] cursor-pointer" 
           />
-          <h1 className='text-[17vw] md:text-[7vw] '>Anything</h1>
+          <h1 className='text-[13vw] md:text-[7vw] '>Anything</h1>
         </div>
       </div>
 

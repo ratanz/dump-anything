@@ -48,8 +48,8 @@ const Navbar = () => {
   };
 
   return (
-    <div className='w-full h-10 fixed left-0 right-0 z-50'>
-        <div className="logo flex items-center justify-between p-2 px-4">
+    <div className='w-full h-10 px-4 py-2 fixed left-0 right-0 z-50'>
+        <div className="logo flex items-center justify-between ">
             <h1>Anything</h1>
 
             <div className="flex items-center gap-4">
