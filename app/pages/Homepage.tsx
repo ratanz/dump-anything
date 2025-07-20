@@ -7,7 +7,7 @@ const Homepage = () => {
   return (
     <>
 
-    <div className='w-full min-h-screen flex md:pt-44 pt-54 px-4  justify-center bg-gradient-to-bl from-zinc-950 via-zinc to-blue-500  '>
+    <div className='w-full min-h-screen flex md:pt-58 pt-54 px-4  justify-center bg-gradient-to-bl from-zinc-200 via-blue-500 to-zinc-200  '>
       <div className="text-container h-fit leading-tight">
         <h1 className='text-[11vw] md:text-7xl'>A place to dump</h1>
 
@@ -33,3 +33,6 @@ const Homepage = () => {
 }
 
 export default Homepage
+
+
+// bg-gradient-to-bl from-zinc-200 via-blue-500 to-zinc-200 
