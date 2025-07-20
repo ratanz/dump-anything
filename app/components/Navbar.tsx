@@ -4,7 +4,7 @@ import { Menu, Music, VolumeX } from 'lucide-react';
 import { playClickSound } from '../lib/utils';
 
 const Navbar = () => {
-  const [isMusicPlaying, setIsMusicPlaying] = useState(true);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const DEFAULT_VOLUME = 0.3; // Set default volume to 30%
 
