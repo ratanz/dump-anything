@@ -1,9 +1,16 @@
 @import "tailwindcss";
 
+
 :root {
   background-color: #0E0E0E;
   color: white;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 600;
+}
+
 
 ::-webkit-scrollbar {
   display: none;
