@@ -11,6 +11,7 @@ import {
 } from "motion/react";
 
 import { useRef, useState } from "react";
+import { playClickSound } from "../../app/lib/utils";
 
 export const FloatingDock = ({
   items,
@@ -37,6 +38,16 @@ const FloatingDockMobile = ({
   className?: string;
 }) => {
   const [open, setOpen] = useState(false);
+
+  const handleToggle = () => {
+    playClickSound();
+    setOpen(!open);
+  };
+
+  const handleItemClick = () => {
+    playClickSound();
+  };
+
   return (
     <div className={cn("relative block md:hidden", className)}>
       <AnimatePresence>
@@ -65,6 +76,7 @@ const FloatingDockMobile = ({
                 <a
                   href={item.href}
                   key={item.title}
+                  onClick={handleItemClick}
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-white/30 backdrop-blur-md border border-white/20 dark:bg-black/30 dark:border-white/10"
                 >
                   <div className="h-4 w-4">{item.icon}</div>
@@ -75,7 +87,7 @@ const FloatingDockMobile = ({
         )}
       </AnimatePresence>
       <button
-        onClick={() => setOpen(!open)}
+        onClick={handleToggle}
         className="flex h-10 w-10 items-center justify-center rounded-full bg-white/30 backdrop-blur-md border border-white/20 dark:bg-black/30 dark:border-white/10"
       >
         <IconLayoutNavbarCollapse className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
@@ -161,8 +173,12 @@ function IconContainer({
 
   const [hovered, setHovered] = useState(false);
 
+  const handleClick = () => {
+    playClickSound();
+  };
+
   return (
-    <a href={href}>
+    <a href={href} onClick={handleClick}>
       <motion.div
         ref={ref}
         style={{ width, height }}

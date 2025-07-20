@@ -26,9 +26,9 @@ const Homepage = () => {
       <div className='fixed bottom-4'>
         <FloatingDock items={[
           {title: "Home", icon: <HomeIcon />, href: "/"},
-          {title: "Image", icon: <ImageIcon />, href: "/images"},
-          {title: "Video", icon: <VideoIcon />, href: "/videos"},
-          {title: "Type", icon: <FileIcon />, href: "/types"},
+          {title: "Image", icon: <ImageIcon />, href: ""},
+          {title: "Video", icon: <VideoIcon />, href: ""},
+          {title: "Type", icon: <FileIcon />, href: ""},
         ]}/>
       </div>
     </div>
