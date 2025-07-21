@@ -2,7 +2,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { FloatingDock } from '@/components/ui/floating-dock'
-import { HomeIcon, ImageIcon, VideoIcon, FileIcon } from 'lucide-react'
+import { HomeIcon, ImageIcon, FileIcon } from 'lucide-react'
 
 const Homepage = () => {
   return (
@@ -26,9 +26,8 @@ const Homepage = () => {
       <div className='fixed bottom-4'>
         <FloatingDock items={[
           {title: "Home", icon: <HomeIcon />, href: "/"},
-          {title: "Image", icon: <ImageIcon />, href: ""},
-          {title: "Video", icon: <VideoIcon />, href: ""},
-          {title: "Type", icon: <FileIcon />, href: ""},
+          {title: "Image", icon: <ImageIcon />, href: "/image"},
+          {title: "Journal", icon: <FileIcon />, href: "/journal"},
         ]}/>
       </div>
     </div>
