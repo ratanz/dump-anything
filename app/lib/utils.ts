@@ -32,3 +32,41 @@ export function playClickSound() {
     console.log('Error playing click sound:', error);
   }
 }
+
+// Image validation
+export const validateImageFile = (file: File) => {
+  // Check file type
+  const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (!validTypes.includes(file.type)) {
+    return {
+      valid: false,
+      error: 'File type not supported. Please upload a JPEG, PNG, GIF or WEBP image.'
+    };
+  }
+
+  // Check file size (10MB max)
+  const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+  if (file.size > maxSize) {
+    return {
+      valid: false,
+      error: 'File too large. Maximum size is 10MB.'
+    };
+  }
+
+  return { valid: true };
+};
+
+// Image URL validation
+export const isValidImageUrl = (url: string) => {
+  try {
+    const parsedUrl = new URL(url);
+    const pathname = parsedUrl.pathname.toLowerCase();
+    return pathname.endsWith('.jpg') || 
+           pathname.endsWith('.jpeg') || 
+           pathname.endsWith('.png') || 
+           pathname.endsWith('.gif') || 
+           pathname.endsWith('.webp');
+  } catch (e) {
+    return false;
+  }
+};
