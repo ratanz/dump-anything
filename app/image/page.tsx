@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react'
 import { FloatingDock } from '@/components/ui/floating-dock'
-import { HomeIcon, ImageIcon, FileIcon, UploadIcon, LinkIcon, AlertCircleIcon } from 'lucide-react'
+import { HomeIcon, ImageIcon, FileIcon, UploadIcon, LinkIcon, AlertCircleIcon, CheckCircleIcon, Loader2, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { validateImageFile, isValidImageUrl, playClickSound } from '@/app/lib/utils'
 import { motion } from 'motion/react'
@@ -19,10 +19,12 @@ interface ImageData {
 export default function ImagePage() {
     const [images, setImages] = useState<ImageData[]>([]);
     const [loading, setLoading] = useState(false);
+    const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
     const [imageUrl, setImageUrl] = useState('');
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [uploadType, setUploadType] = useState<'file' | 'url'>('file');
     const [error, setError] = useState<string | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     // Add client-side only rendering flag
     const [isClient, setIsClient] = useState(false);
@@ -36,6 +38,16 @@ export default function ImagePage() {
     useEffect(() => {
         fetchImages();
     }, []);
+
+    // Reset upload status after success
+    useEffect(() => {
+        if (uploadStatus === 'success') {
+            const timer = setTimeout(() => {
+                setUploadStatus('idle');
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [uploadStatus]);
 
     const fetchImages = async () => {
         try {
@@ -70,6 +82,7 @@ export default function ImagePage() {
         }
         
         setLoading(true);
+        setUploadStatus('uploading');
         
         try {
             const formData = new FormData();
@@ -83,17 +96,22 @@ export default function ImagePage() {
             if (response.ok) {
                 const data = await response.json();
                 setImages(prev => [data.image, ...prev]);
-                setShowUploadModal(false);
+                setUploadStatus('success');
+                setTimeout(() => {
+                    setShowUploadModal(false);
+                }, 2000);
                 if (fileInputRef.current) {
                     fileInputRef.current.value = '';
                 }
             } else {
                 const errorData = await response.json();
                 setError(errorData.error || 'Upload failed');
+                setUploadStatus('error');
             }
         } catch (error) {
             console.error('Upload error:', error);
             setError('Upload failed. Please try again.');
+            setUploadStatus('error');
         } finally {
             setLoading(false);
         }
@@ -115,6 +133,7 @@ export default function ImagePage() {
         }
         
         setLoading(true);
+        setUploadStatus('uploading');
         
         try {
             const formData = new FormData();
@@ -129,16 +148,45 @@ export default function ImagePage() {
                 const data = await response.json();
                 setImages(prev => [data.image, ...prev]);
                 setImageUrl('');
-                setShowUploadModal(false);
+                setUploadStatus('success');
+                setTimeout(() => {
+                    setShowUploadModal(false);
+                }, 2000);
             } else {
                 const errorData = await response.json();
                 setError(errorData.error || 'Upload failed');
+                setUploadStatus('error');
             }
         } catch (error) {
             console.error('Upload error:', error);
             setError('Upload failed. Please try again.');
+            setUploadStatus('error');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDeleteImage = async (id: string) => {
+        try {
+            setDeletingId(id);
+            const response = await fetch(`/api/images/${id}`, {
+                method: 'DELETE',
+            });
+            
+            if (response.ok) {
+                // Remove the image from state
+                setImages(prev => prev.filter(img => img.id !== id));
+                playClickSound();
+            } else {
+                const errorData = await response.json();
+                console.error('Error deleting image:', errorData);
+                alert('Failed to delete image. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error deleting image:', error);
+            alert('Failed to delete image. Please try again.');
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -148,6 +196,28 @@ export default function ImagePage() {
             <h1 className='text-4xl md:text-6xl my-8 text-white'>Loading...</h1>
         </div>;
     }
+
+    // Render upload status message
+    const renderUploadStatus = () => {
+        switch (uploadStatus) {
+            case 'uploading':
+                return (
+                    <div className="bg-blue-50/30 backdrop-blur-md border border-blue-200 text-blue-700 px-4 py-3 rounded-md mb-6 flex items-center justify-center">
+                        <Loader2 size={20} className="mr-2 animate-spin" />
+                        <p>Uploading your image...</p>
+                    </div>
+                );
+            case 'success':
+                return (
+                    <div className="bg-green-50/30 backdrop-blur-md border border-green-200 text-green-700 px-4 py-3 rounded-md mb-6 flex items-center justify-center">
+                        <CheckCircleIcon size={20} className="mr-2" />
+                        <p>Upload successful!</p>
+                    </div>
+                );
+            default:
+                return null;
+        }
+    };
 
     return (
         <div className='w-full min-h-screen flex flex-col items-center bg-gradient-to-br from-zinc-200 via-blue-500 to-zinc-200 pb-20'>
@@ -160,6 +230,7 @@ export default function ImagePage() {
                 <button 
                     onClick={() => {
                         setError(null);
+                        setUploadStatus('idle');
                         setShowUploadModal(true);
                         playClickSound();
                     }}
@@ -177,6 +248,9 @@ export default function ImagePage() {
                     <div className="bg-transparent backdrop-blur-3xl rounded-lg p-14 border border-zinc-300/20 w-full max-w-md shadow-2xl">
                         <h2 className="text-2xl font-bold mb-10 text-center text-gray-100">Upload Image</h2>
                         
+                        {/* Status message */}
+                        {renderUploadStatus()}
+                        
                         {error && (
                             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6 flex items-start">
                                 <AlertCircleIcon size={20} className="mr-2 mt-0.5 flex-shrink-0" />
@@ -191,6 +265,7 @@ export default function ImagePage() {
                                     setUploadType('file');
                                     setError(null);
                                 }}
+                                disabled={uploadStatus === 'uploading'}
                             >
                                 <UploadIcon size={20} />
                                 <span>Upload File</span>
@@ -201,6 +276,7 @@ export default function ImagePage() {
                                     setUploadType('url');
                                     setError(null);
                                 }}
+                                disabled={uploadStatus === 'uploading'}
                             >
                                 <LinkIcon size={20} />
                                 <span>Image URL</span>
@@ -216,14 +292,24 @@ export default function ImagePage() {
                                     accept="image/jpeg,image/png,image/gif,image/webp"
                                     className="hidden"
                                     id="file-upload"
+                                    disabled={uploadStatus === 'uploading'}
                                 />
                                 <label 
                                     htmlFor="file-upload"
-                                    className="block w-full p-12 border-2 border-zinc-300/50 rounded-lg text-center cursor-pointer hover:bg-zinc-950/20 transition-colors"
+                                    className={`block w-full p-12 border-2 border-zinc-300/50 rounded-lg text-center cursor-pointer hover:bg-zinc-950/20 transition-colors ${uploadStatus === 'uploading' ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    <UploadIcon size={36} className="mx-auto mb-3 text-blue-400" />
-                                    <p className="text-lg font-medium text-gray-100">Click to select an image</p>
-                                    <p className="text-sm text-gray-400 mt-2">PNG, JPG, GIF up to 10MB</p>
+                                    {uploadStatus === 'uploading' ? (
+                                        <>
+                                            <Loader2 size={36} className="mx-auto mb-3 text-blue-400 animate-spin" />
+                                            <p className="text-lg font-medium text-gray-100">Uploading...</p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <UploadIcon size={36} className="mx-auto mb-3 text-blue-400" />
+                                            <p className="text-lg font-medium text-gray-100">Click to select an image</p>
+                                            <p className="text-sm text-gray-400 mt-2">PNG, JPG, GIF up to 10MB</p>
+                                        </>
+                                    )}
                                 </label>
                             </div>
                         ) : (
@@ -235,20 +321,27 @@ export default function ImagePage() {
                                     placeholder="Paste image URL here"
                                     className="w-full p-4 text-lg border-2 border-zinc-300/50 rounded-md mb-8 focus:outline-none focus-within:border-blue-500"
                                     required
+                                    disabled={uploadStatus === 'uploading'}
                                 />
                                 <button 
                                     type="submit"
-                                    disabled={loading}
-                                    className="w-full bg-transparent backdrop-blur-3xl border border-zinc-300/50 hover:bg-zinc-950/20 cursor-pointer  p-3 rounded-md font-medium text-md transition-colors"
+                                    disabled={uploadStatus === 'uploading'}
+                                    className={`w-full bg-transparent backdrop-blur-3xl border border-zinc-300/50 hover:bg-zinc-950/20 cursor-pointer p-3 rounded-md font-medium text-md transition-colors ${uploadStatus === 'uploading' ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    {loading ? 'Uploading...' : 'Upload'}
+                                    {uploadStatus === 'uploading' ? (
+                                        <div className="flex items-center justify-center gap-2">
+                                            <Loader2 size={20} className="animate-spin" />
+                                            <span>Uploading...</span>
+                                        </div>
+                                    ) : 'Upload'}
                                 </button>
                             </form>
                         )}
                         
                         <button 
                             onClick={() => setShowUploadModal(false)}
-                            className="w-full border border-zinc-300/50 bg-transparent backdrop-blur-3xl text-white p-3 rounded-md font-medium hover:bg-zinc-950/30 transition-colors"
+                            className={`w-full border border-zinc-300/50 bg-transparent backdrop-blur-3xl text-white p-3 rounded-md font-medium hover:bg-zinc-950/30 transition-colors ${uploadStatus === 'uploading' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={uploadStatus === 'uploading'}
                         >
                             Cancel
                         </button>
@@ -264,14 +357,33 @@ export default function ImagePage() {
                     </div>
                 ) : images.length > 0 ? (
                     images.map((image) => (
-                        <div key={image.id} className="relative aspect-square overflow-hidden rounded-lg shadow-md bg-white">
+                        <div 
+                            key={image.id} 
+                            className="relative aspect-square overflow-hidden rounded-lg shadow-md bg-white group"
+                        >
                             <Image
                                 src={image.url}
                                 alt={image.fileName || 'Image'}
                                 fill
-                                className="object-cover hover:scale-105 transition-transform"
+                                className="object-cover transition-transform"
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                priority
                             />
+                            
+                            {/* Delete Icon on Hover */}
+                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-t from-black/20 to-transparent transition-opacity flex items-end justify-center p-3">
+                                <button 
+                                    className="p-2 rounded-full transform hover:scale-110 hover:bg-red-600/80 cursor-pointer transition-transform"
+                                    onClick={() => handleDeleteImage(image.id)}
+                                    disabled={deletingId === image.id}
+                                >
+                                    {deletingId === image.id ? (
+                                        <Loader2 size={20} className="text-white animate-spin" />
+                                    ) : (
+                                        <Trash2 size={20} className="text-white" />
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     ))
                 ) : (
