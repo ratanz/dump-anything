@@ -3,7 +3,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import { FloatingDock } from '@/components/ui/floating-dock'
 import { HomeIcon, ImageIcon, FileIcon, UploadIcon, LinkIcon, AlertCircleIcon } from 'lucide-react'
 import Image from 'next/image'
-import { validateImageFile, isValidImageUrl } from '@/app/lib/utils'
+import { validateImageFile, isValidImageUrl, playClickSound } from '@/app/lib/utils'
+import { motion } from 'motion/react'
 
 interface ImageData {
     id: string;
@@ -152,21 +153,29 @@ export default function ImagePage() {
         <div className='w-full min-h-screen flex flex-col items-center bg-gradient-to-br from-zinc-200 via-blue-500 to-zinc-200 pb-20'>
 
             {/* Upload Button */}
-            <button 
-                onClick={() => {
-                    setError(null);
-                    setShowUploadModal(true);
-                }}
-                className='fixed right-[37vw] bottom-6 bg-zinc-950/40 backdrop-blur-3xl border border-zinc-200 hover:bg-zinc-950/50 hover:scale-110 p-3 rounded-full shadow-lg cursor-pointer z-10 transition-all duration-300 ease-in-out'
+            <motion.div
+                className="fixed right-[37vw] bottom-6 z-10 hover:scale-110 transition-all duration-300 ease-in-out cursor-pointer"
+               
             >
-                <UploadIcon size={24} className="text-white" />
-            </button>
+                <button 
+                    onClick={() => {
+                        setError(null);
+                        setShowUploadModal(true);
+                        playClickSound();
+                    }}
+                    className="flex h-12 w-12 items-center justify-center rounded-full bg-white/40 backdrop-blur-md border border-white/20 dark:bg-black/40 dark:border-white/10"
+                >
+                    <div className="flex items-center justify-center h-5 w-5">
+                        <UploadIcon />
+                    </div>
+                </button>
+            </motion.div>
 
             {/* Upload Modal */}
             {showUploadModal && (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
                     <div className="bg-transparent backdrop-blur-3xl rounded-lg p-14 border border-zinc-300/20 w-full max-w-md shadow-2xl">
-                        <h2 className="text-2xl font-bold mb-6 text-center text-gray-100">Upload Image</h2>
+                        <h2 className="text-2xl font-bold mb-10 text-center text-gray-100">Upload Image</h2>
                         
                         {error && (
                             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6 flex items-start">
@@ -218,19 +227,19 @@ export default function ImagePage() {
                                 </label>
                             </div>
                         ) : (
-                            <form onSubmit={handleUrlUpload} className="mb-6">
+                            <form onSubmit={handleUrlUpload} className="mb-3">
                                 <input 
                                     type="url" 
                                     value={imageUrl}
                                     onChange={(e) => setImageUrl(e.target.value)}
                                     placeholder="Paste image URL here"
-                                    className="w-full p-4 text-lg border-2 border-zinc-300/50 rounded-md mb-4 focus:outline-none focus-within:border-blue-500"
+                                    className="w-full p-4 text-lg border-2 border-zinc-300/50 rounded-md mb-8 focus:outline-none focus-within:border-blue-500"
                                     required
                                 />
                                 <button 
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full bg-transparent backdrop-blur-3xl border border-zinc-300/50 hover:bg-zinc-950/20 cursor-pointer text-white p-3 rounded-md font-medium text-md transition-colors"
+                                    className="w-full bg-transparent backdrop-blur-3xl border border-zinc-300/50 hover:bg-zinc-950/20 cursor-pointer  p-3 rounded-md font-medium text-md transition-colors"
                                 >
                                     {loading ? 'Uploading...' : 'Upload'}
                                 </button>
@@ -239,7 +248,7 @@ export default function ImagePage() {
                         
                         <button 
                             onClick={() => setShowUploadModal(false)}
-                            className="w-full border-2 border-zinc-300/50 bg-transparent backdrop-blur-3xl text-white p-3 rounded-md  font-medium hover:bg-zinc-950/30 transition-colors"
+                            className="w-full border border-zinc-300/50 bg-transparent backdrop-blur-3xl text-white p-3 rounded-md font-medium hover:bg-zinc-950/30 transition-colors"
                         >
                             Cancel
                         </button>
