@@ -7,7 +7,7 @@ import { HomeIcon, ImageIcon, FileIcon } from 'lucide-react'
 const Homepage = () => {
   return (
     <>
-    <div className='w-full h-screen flex flex-col md:pt-58 pt-44 px-4 items-center bg-gradient-to-bl from-zinc-200 via-blue-500 to-zinc-200'>
+    <div className='w-full h-screen flex flex-col md:pt-58 pt-44 px-4 items-center bg-[#0E0E0E]'>
       <div className="text-container h-fit leading-tight">
         <h1 className='text-[10vw] md:text-7xl'>A place to dump</h1>
 

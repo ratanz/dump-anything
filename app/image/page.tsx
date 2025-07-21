@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { validateImageFile, isValidImageUrl, playClickSound } from '@/app/lib/utils'
 import { motion } from 'motion/react'
 
+
 interface ImageData {
     id: string;
     url: string;
@@ -192,8 +193,8 @@ export default function ImagePage() {
 
     // Return early with loading state if not client-side
     if (!isClient) {
-        return <div className='w-full min-h-screen flex flex-col items-center bg-gradient-to-br from-zinc-200 via-blue-500 to-zinc-200 pb-20'>
-            <h1 className='text-4xl md:text-6xl my-8 text-white'>Loading...</h1>
+        return <div className='w-full min-h-screen flex flex-col items-center bg-[#0E0E0E] pb-20'>
+            
         </div>;
     }
 
@@ -220,7 +221,9 @@ export default function ImagePage() {
     };
 
     return (
-        <div className='w-full min-h-screen flex flex-col items-center bg-gradient-to-br from-zinc-200 via-blue-500 to-zinc-200 pb-20'>
+        <>
+        <div className='w-full min-h-screen flex flex-col items-center bg-[#0E0E0E] lg:pt-18 pt-14'>
+            
 
             {/* Upload Button */}
             <motion.div
@@ -359,7 +362,7 @@ export default function ImagePage() {
                     images.map((image) => (
                         <div 
                             key={image.id} 
-                            className="relative aspect-square overflow-hidden rounded-lg shadow-md bg-white group"
+                            className="relative aspect-square overflow-hidden hover:scale-105 transition-all duration-300 ease-in-out rounded-lg shadow-md border border-white/10 group"
                         >
                             <Image
                                 src={image.url}
@@ -401,5 +404,6 @@ export default function ImagePage() {
                 ]} />
             </div>
         </div>
+        </>
     )
 } 
