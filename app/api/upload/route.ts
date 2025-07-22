@@ -3,9 +3,26 @@ import prisma from '@/app/lib/prisma';
 import { v4 as uuidv4 } from 'uuid';
 import { validateImageFile, isValidImageUrl } from '@/app/lib/utils';
 import { uploadFileToS3 } from '@/app/lib/s3';
+import { auth } from '../auth/[...nextauth]/route';
 
 export async function POST(request: Request) {
   try {
+    // Get the current user from the session
+    const session = await auth();
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get the user ID from the database
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     const formData = await request.formData();
     const imageUrl = formData.get('imageUrl') as string;
     const imageFile = formData.get('imageFile') as File | null;
@@ -56,16 +73,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 });
     }
 
-    // Store in database with only the fields that are definitely in the schema
-    // Use type assertion to handle the additional fields
+    // Store in database with user ID
+    const imageData: any = {
+      url,
+      fileName,
+      userId: user.id
+    };
+    
+    // Add optional fields if they exist
+    if (s3Key) imageData.s3Key = s3Key;
+    if (fileSize !== null) imageData.fileSize = fileSize;
+    if (mimeType) imageData.mimeType = mimeType;
+    
     const image = await prisma.image.create({
-      data: {
-        url,
-        fileName,
-        ...(s3Key ? { s3Key } : {}),
-        ...(fileSize !== null ? { fileSize } : {}),
-        ...(mimeType ? { mimeType } : {})
-      } as any
+      data: imageData
     });
 
     return NextResponse.json({ success: true, image });

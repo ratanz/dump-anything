@@ -5,7 +5,9 @@ import { HomeIcon, ImageIcon, FileIcon, UploadIcon, LinkIcon, AlertCircleIcon, C
 import Image from 'next/image'
 import { validateImageFile, isValidImageUrl, playClickSound } from '@/app/lib/utils'
 import { motion } from 'motion/react'
-
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 interface ImageData {
     id: string;
@@ -29,16 +31,27 @@ export default function ImagePage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     // Add client-side only rendering flag
     const [isClient, setIsClient] = useState(false);
+    const { data: session, status } = useSession();
+    const router = useRouter();
 
     // Mark component as client-side rendered once mounted
     useEffect(() => {
         setIsClient(true);
     }, []);
 
-    // Fetch images on component mount
+    // Redirect to login if not authenticated
     useEffect(() => {
-        fetchImages();
-    }, []);
+        if (status === 'unauthenticated') {
+            router.push('/auth/signin');
+        }
+    }, [status, router]);
+
+    // Fetch images on component mount if authenticated
+    useEffect(() => {
+        if (session?.user) {
+            fetchImages();
+        }
+    }, [session]);
 
     // Reset upload status after success
     useEffect(() => {
@@ -70,7 +83,7 @@ export default function ImagePage() {
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files || e.target.files.length === 0) return;
+        if (!e.target.files || e.target.files.length === 0 || !session?.user) return;
         
         setError(null);
         const file = e.target.files[0];
@@ -120,6 +133,8 @@ export default function ImagePage() {
 
     const handleUrlUpload = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!session?.user) return;
+        
         setError(null);
         
         if (!imageUrl.trim()) {
@@ -168,6 +183,8 @@ export default function ImagePage() {
     };
 
     const handleDeleteImage = async (id: string) => {
+        if (!session?.user) return;
+        
         try {
             setDeletingId(id);
             const response = await fetch(`/api/images/${id}`, {
@@ -191,11 +208,32 @@ export default function ImagePage() {
         }
     };
 
-    // Return early with loading state if not client-side
-    if (!isClient) {
-        return <div className='w-full min-h-screen flex flex-col items-center bg-[#0E0E0E] pb-20'>
-            
-        </div>;
+    // Show loading state while checking authentication
+    if (status === 'loading' || !isClient) {
+        return (
+            <div className='w-full min-h-screen flex flex-col items-center justify-center bg-[#0E0E0E]'>
+                <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
+                <p className="mt-4 text-white">Loading...</p>
+            </div>
+        );
+    }
+
+    // Show login prompt if not authenticated
+    if (status === 'unauthenticated') {
+        return (
+            <div className='w-full min-h-screen flex flex-col items-center justify-center bg-[#0E0E0E] p-4'>
+                <div className="max-w-md w-full bg-zinc-900/80 backdrop-blur-md rounded-xl border border-zinc-800 p-8 shadow-xl text-center">
+                    <h1 className="text-2xl font-bold text-white mb-4">Authentication Required</h1>
+                    <p className="text-zinc-400 mb-6">Please sign in to access the image gallery</p>
+                    <Link 
+                        href="/auth/signin" 
+                        className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors"
+                    >
+                        Sign In
+                    </Link>
+                </div>
+            </div>
+        );
     }
 
     // Render upload status message
@@ -354,9 +392,10 @@ export default function ImagePage() {
 
             {/* Image Grid */}
             <div className="w-full max-w-7xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {loading && images.length === 0 ? (
+                {loading ? (
                     <div className="col-span-full text-center py-12">
-                        <p className="text-xl text-white">Loading images...</p>
+                        <Loader2 className="h-10 w-10 text-blue-500 animate-spin mx-auto" />
+                        <p className="mt-4 text-white">Loading images...</p>
                     </div>
                 ) : images.length > 0 ? (
                     images.map((image) => (

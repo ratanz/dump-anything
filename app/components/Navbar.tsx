@@ -2,11 +2,15 @@
 import React, { useState, useEffect } from 'react'
 import { Menu, Music, VolumeX } from 'lucide-react';
 import { playClickSound } from '../lib/utils';
+import { signOut, useSession } from 'next-auth/react';
+import { User, LogOut, LogIn } from 'lucide-react';
+import Link from 'next/link';
 
 const Navbar = () => {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const DEFAULT_VOLUME = 0.3; // Set default volume to 30%
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     // Initialize audio on client-side only
@@ -52,20 +56,47 @@ const Navbar = () => {
         <div className="logo flex items-center justify-between ">
             <h1>Anything</h1>
 
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={toggleMusic} 
-                className="p-1 rounded-full hover:bg-white/10 transition-colors"
-                aria-label={isMusicPlaying ? "Mute music" : "Play music"}
-              >
-                {isMusicPlaying ? <Music size={18} /> : <VolumeX size={18} />}
-              </button>
-              
-              <div 
-                className="menu hover:cursor-pointer"
-                onClick={handleMenuClick}
-              >
-                <Menu />
+            {/* Auth buttons */}
+            <div className="flex items-center gap-2">
+              {status === 'authenticated' && session?.user ? (
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-white bg-zinc-800/60 backdrop-blur-md px-3 py-1.5 rounded-full">
+                    <User size={16} />
+                    <span className="text-sm">{session.user.name || session.user.email}</span>
+                  </div>
+                  <button 
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="flex items-center gap-1 text-white bg-red-600/80 hover:bg-red-600 px-3 py-1.5 rounded-full text-sm transition-colors"
+                  >
+                    <LogOut size={16} />
+                    <span>Sign out</span>
+                  </button>
+                </div>
+              ) : status === 'unauthenticated' ? (
+                <Link 
+                  href="/auth/signin"
+                  className="flex items-center gap-1 text-white px-3 py-1.5 rounded-full text-sm transition-colors"
+                >
+                  <LogIn size={16} />
+                  <span>Sign in</span>
+                </Link>
+              ) : null}
+
+              <div className="flex items-center gap-1 ml-4">
+                <button 
+                  onClick={toggleMusic} 
+                  className="p-1 rounded-full hover:bg-white/10 transition-colors"
+                  aria-label={isMusicPlaying ? "Mute music" : "Play music"}
+                >
+                  {isMusicPlaying ? <Music size={18} /> : <VolumeX size={18} />}
+                </button>
+                
+                <div 
+                  className="menu hover:cursor-pointer"
+                  onClick={handleMenuClick}
+                >
+                  <Menu />
+                </div>
               </div>
             </div>
         </div>

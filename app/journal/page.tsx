@@ -1,12 +1,26 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { FloatingDock } from '@/components/ui/floating-dock'
-import { HomeIcon, ImageIcon, FileIcon, SaveIcon } from 'lucide-react'
+import { HomeIcon, ImageIcon, FileIcon, SaveIcon, Loader2 } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+
+interface JournalEntry {
+  id: string;
+  content: string;
+  date: string;
+  createdAt: string;
+}
 
 export default function JournalPage() {
   const [entry, setEntry] = useState('')
-  const [savedEntries, setSavedEntries] = useState<{date: string, content: string}[]>([])
+  const [savedEntries, setSavedEntries] = useState<JournalEntry[]>([])
   const [currentDate, setCurrentDate] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const { data: session, status } = useSession()
+  const router = useRouter()
 
   useEffect(() => {
     // Format current date as YYYY-MM-DD
@@ -14,72 +28,150 @@ export default function JournalPage() {
     const formattedDate = now.toISOString().split('T')[0]
     setCurrentDate(formattedDate)
 
-    // Load saved entries from localStorage
-    const storedEntries = localStorage.getItem('journalEntries')
-    if (storedEntries) {
-      setSavedEntries(JSON.parse(storedEntries))
+    // Fetch journal entries if user is authenticated
+    if (session?.user) {
+      fetchJournalEntries()
     }
-  }, [])
+  }, [session])
 
-  const handleSaveEntry = () => {
-    if (!entry.trim()) return
-
-    const newEntry = {
-      date: currentDate,
-      content: entry
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin')
     }
+  }, [status, router])
 
-    const updatedEntries = [...savedEntries, newEntry]
-    setSavedEntries(updatedEntries)
-    
-    // Save to localStorage
-    localStorage.setItem('journalEntries', JSON.stringify(updatedEntries))
-    
-    // Clear the current entry
-    setEntry('')
+  const fetchJournalEntries = async () => {
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/journal')
+      if (response.ok) {
+        const data = await response.json()
+        setSavedEntries(data)
+      }
+    } catch (error) {
+      console.error('Error fetching journal entries:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSaveEntry = async () => {
+    if (!entry.trim() || !session?.user) return
+
+    setIsSaving(true)
+    try {
+      const response = await fetch('/api/journal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: entry,
+          date: currentDate,
+        }),
+      })
+
+      if (response.ok) {
+        const newEntry = await response.json()
+        setSavedEntries(prev => [newEntry, ...prev])
+        setEntry('')
+      }
+    } catch (error) {
+      console.error('Error saving journal entry:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  // Show loading state while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className='w-full min-h-screen flex flex-col items-center justify-center bg-[#0E0E0E]'>
+        <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
+        <p className="mt-4 text-white">Loading...</p>
+      </div>
+    )
+  }
+
+  // Show login prompt if not authenticated
+  if (status === 'unauthenticated') {
+    return (
+      <div className='w-full min-h-screen flex flex-col items-center justify-center bg-[#0E0E0E] p-4'>
+        <div className="max-w-md w-full bg-zinc-900/80 backdrop-blur-md rounded-xl border border-zinc-800 p-8 shadow-xl text-center">
+          <h1 className="text-2xl font-bold text-white mb-4">Authentication Required</h1>
+          <p className="text-zinc-400 mb-6">Please sign in to access your journal</p>
+          <Link 
+            href="/auth/signin" 
+            className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors"
+          >
+            Sign In
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className='w-full min-h-screen flex flex-col items-center pt-10 bg-gradient-to-br from-zinc-200 via-emerald-400 to-zinc-200'>
-      <h1 className='text-4xl md:text-6xl mb-8 text-zinc-800'>Daily Journal</h1>
+    <div className='w-full min-h-screen flex flex-col items-center pt-10 bg-[#0E0E0E]'>
+      <h1 className='text-4xl md:text-6xl mb-8 text-white'>Daily Journal</h1>
       
       <div className='w-full max-w-3xl px-4 flex flex-col gap-6'>
-        <div className='bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6'>
+        <div className='bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-lg shadow-lg p-6'>
           <div className='flex justify-between items-center mb-4'>
-            <h2 className='text-2xl font-medium text-zinc-800'>Today's Entry</h2>
-            <span className='text-zinc-600'>{currentDate}</span>
+            <h2 className='text-2xl font-medium text-white'>Today's Entry</h2>
+            <span className='text-zinc-400'>{currentDate}</span>
           </div>
           
           <textarea
-            className='w-full h-64 p-4 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500'
+            className='w-full h-64 p-4 bg-zinc-800 border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
             placeholder="What's on your mind today?"
             value={entry}
             onChange={(e) => setEntry(e.target.value)}
           />
           
           <button 
-            className='mt-4 flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-md transition-colors'
+            className='mt-4 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             onClick={handleSaveEntry}
+            disabled={isSaving || !entry.trim()}
           >
-            <SaveIcon size={18} />
-            Save Entry
+            {isSaving ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <SaveIcon size={18} />
+                Save Entry
+              </>
+            )}
           </button>
         </div>
         
-        {savedEntries.length > 0 && (
-          <div className='bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6'>
-            <h2 className='text-2xl font-medium text-zinc-800 mb-4'>Previous Entries</h2>
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+          </div>
+        ) : savedEntries.length > 0 ? (
+          <div className='bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-lg shadow-lg p-6'>
+            <h2 className='text-2xl font-medium text-white mb-4'>Previous Entries</h2>
             
-            <div className='flex flex-col gap-4 max-h-64 overflow-y-auto'>
-              {savedEntries.slice().reverse().map((entry, index) => (
-                <div key={index} className='border-b border-zinc-200 pb-4'>
+            <div className='flex flex-col gap-4 max-h-96 overflow-y-auto'>
+              {savedEntries.map((entry) => (
+                <div key={entry.id} className='border-b border-zinc-800 pb-4'>
                   <div className='flex justify-between items-center mb-2'>
-                    <span className='font-medium text-zinc-700'>{entry.date}</span>
+                    <span className='font-medium text-zinc-300'>{new Date(entry.date).toLocaleDateString()}</span>
+                    <span className='text-xs text-zinc-500'>{new Date(entry.createdAt).toLocaleTimeString()}</span>
                   </div>
-                  <p className='text-zinc-600 whitespace-pre-wrap'>{entry.content}</p>
+                  <p className='text-zinc-400 whitespace-pre-wrap'>{entry.content}</p>
                 </div>
               ))}
             </div>
+          </div>
+        ) : (
+          <div className='bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-lg shadow-lg p-6 text-center'>
+            <p className='text-zinc-400'>No journal entries yet. Start writing today!</p>
           </div>
         )}
       </div>
