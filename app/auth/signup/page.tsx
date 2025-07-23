@@ -73,7 +73,7 @@ export default function SignUp() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0E0E0E] px-4">
-      <div className="w-full max-w-md p-8 space-y-8 bg-zinc-900/80 backdrop-blur-md rounded-xl border border-zinc-800 shadow-xl">
+      <div className="w-full max-w-md p-8 space-y-8 bg-zinc-900/80 backdrop-blur-4xl rounded-xl border border-zinc-400/30 shadow-xl">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-white">Create an Account</h1>
           <p className="mt-2 text-zinc-400">Join Dump Anything today</p>
