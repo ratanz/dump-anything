@@ -19,6 +19,7 @@ export const authConfig = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
+     
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           return null;

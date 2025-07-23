@@ -27,9 +27,9 @@ export async function DELETE(
         await deleteFileFromS3(image.s3Key);
       } catch (s3Error) {
         console.error('Error deleting from S3:', s3Error);
-        // Continue with database deletion even if S3 deletion fails
       }
     }
+    // Continue with database deletion even if S3 deletion fails
 
     // Delete from database
     await prisma.image.delete({
