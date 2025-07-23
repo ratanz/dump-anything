@@ -9,7 +9,7 @@ import Link from 'next/link';
 const Navbar = () => {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
-  const DEFAULT_VOLUME = 0.3; // Set default volume to 30%
+  const DEFAULT_VOLUME = 0.5; // Set default volume to 50%
   const { data: session, status } = useSession();
 
   useEffect(() => {
@@ -48,28 +48,26 @@ const Navbar = () => {
 
   const handleMenuClick = () => {
     playClickSound();
-    console.log('Menu clicked');
   };
 
   return (
-    <div className='w-full h-10 px-4 py-2 fixed left-0 right-0 z-50'>
+    <div className='w-full h-10 px-4 py-3 fixed inset-0 z-50'>
         <div className="logo flex items-center justify-between ">
             <h1>Anything</h1>
 
             {/* Auth buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               {status === 'authenticated' && session?.user ? (
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 text-white bg-zinc-800/60 backdrop-blur-md px-3 py-1.5 rounded-full">
+                <div className="flex items-center">
+                  <div className="flex items-center gap-2 text-white bg-transparent border border-zinc-300/30 backdrop-blur-4xl px-3 py-1.5 rounded-full">
                     <User size={16} />
                     <span className="text-sm">{session.user.name || session.user.email}</span>
                   </div>
                   <button 
                     onClick={() => signOut({ callbackUrl: '/' })}
-                    className="flex items-center gap-1 text-white bg-red-600/80 hover:bg-red-600 px-3 py-1.5 rounded-full text-sm transition-colors"
+                    className="flex items-center gap-1 text-white hover:text-red-500 cursor-pointer px-2 py-1.5 rounded-full text-sm transition-colors"
                   >
                     <LogOut size={16} />
-                    <span>Sign out</span>
                   </button>
                 </div>
               ) : status === 'unauthenticated' ? (
@@ -82,10 +80,10 @@ const Navbar = () => {
                 </Link>
               ) : null}
 
-              <div className="flex items-center gap-1 ml-4">
+              <div className="flex items-center gap-2">
                 <button 
                   onClick={toggleMusic} 
-                  className="p-1 rounded-full hover:bg-white/10 transition-colors"
+                  className="p-1 rounded-full hover:text-blue-500 transition-colors cursor-pointer"
                   aria-label={isMusicPlaying ? "Mute music" : "Play music"}
                 >
                   {isMusicPlaying ? <Music size={18} /> : <VolumeX size={18} />}

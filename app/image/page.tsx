@@ -302,7 +302,7 @@ export default function ImagePage() {
                         
                         <div className="flex gap-4 mb-6">
                             <button 
-                                className={`flex-1 p-4 rounded-md flex items-center justify-center gap-2 font-medium ${uploadType === 'file' ? ' text-blue-500 border-2 border-blue-500' : 'bg-transparent backdrop-blur-3xl border border-zinc-300/50 hover:bg-zinc-950/20 cursor-pointer'}`}
+                                className={`flex-1 p-4 rounded-md flex items-center justify-center gap-2 font-medium ${uploadType === 'file' ? ' text-blue-400 border-2 border-blue-500' : 'bg-transparent backdrop-blur-3xl border border-zinc-300/50 hover:bg-zinc-950/20 cursor-pointer'}`}
                                 onClick={() => {
                                     setUploadType('file');
                                     setError(null);
@@ -313,7 +313,7 @@ export default function ImagePage() {
                                 <span>Upload File</span>
                             </button>
                             <button 
-                                className={`flex-1 p-4 rounded-md flex items-center justify-center gap-2 font-medium ${uploadType === 'url' ? 'text-blue-500 border-2 border-blue-500' : 'bg-transparent backdrop-blur-3xl border border-zinc-300/50 hover:bg-zinc-950/20 cursor-pointer'}`}
+                                className={`flex-1 p-4 rounded-md flex items-center justify-center gap-2 font-medium ${uploadType === 'url' ? 'text-blue-400 border-2 border-blue-500' : 'bg-transparent backdrop-blur-3xl border border-zinc-300/50 hover:bg-zinc-950/20 cursor-pointer'}`}
                                 onClick={() => {
                                     setUploadType('url');
                                     setError(null);
@@ -392,7 +392,7 @@ export default function ImagePage() {
             )}
 
             {/* Image Grid */}
-            <div className="w-full max-w-7xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="w-full max-w-8xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {loading ? (
                     <div className="col-span-full text-center py-12">
                         <Loader2 className="h-10 w-10 text-blue-500 animate-spin mx-auto" />
