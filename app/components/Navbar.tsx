@@ -1,10 +1,11 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Menu, Music, VolumeX } from 'lucide-react';
+import {  Music, VolumeX } from 'lucide-react';
 import { playClickSound } from '../lib/utils';
 import { signOut, useSession } from 'next-auth/react';
 import { User, LogOut, LogIn } from 'lucide-react';
 import Link from 'next/link';
+import 'remixicon/fonts/remixicon.css'
 
 const Navbar = () => {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
@@ -59,7 +60,7 @@ const Navbar = () => {
             <div className="flex items-center">
               {status === 'authenticated' && session?.user ? (
                 <div className="flex items-center">
-                  <div className="flex items-center gap-2 text-white bg-transparent border border-zinc-300/30 backdrop-blur-4xl px-3 py-1.5 rounded-full">
+                  <div className="flex items-center gap-2 text-white backdrop-blur-4xl px-3 py-1.5 ">
                     <User size={16} />
                     <span className="text-sm">{session.user.name || session.user.email}</span>
                   </div>
@@ -93,7 +94,7 @@ const Navbar = () => {
                   className="menu hover:cursor-pointer"
                   onClick={handleMenuClick}
                 >
-                  <Menu />
+                  <i className="ri-menu-3-line hover:text-blue-500"></i>
                 </div>
               </div>
             </div>

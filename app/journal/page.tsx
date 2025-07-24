@@ -113,25 +113,24 @@ export default function JournalPage() {
   }
 
   return (
-    <div className='w-full min-h-screen flex flex-col items-center pt-10 bg-[#0E0E0E]'>
-      <h1 className='text-4xl md:text-6xl mb-8 text-white'>Daily Journal</h1>
+    <div className='w-full min-h-screen flex flex-col items-center pt-24 bg-gradient-to-bl from-zinc-800 via-blue-500 to-zinc-800'>
       
       <div className='w-full max-w-3xl px-4 flex flex-col gap-6'>
-        <div className='bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-lg shadow-lg p-6'>
+        <div className='bg-transparent backdrop-blur-xl border border-zinc-300/10 rounded-lg shadow-lg p-6'>
           <div className='flex justify-between items-center mb-4'>
-            <h2 className='text-2xl font-medium text-white'>Today's Entry</h2>
+            <h2 className='text-2xl font-medium text-white'>Today&apos;s Entry</h2>
             <span className='text-zinc-400'>{currentDate}</span>
           </div>
           
           <textarea
-            className='w-full h-64 p-4 bg-zinc-800 border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+            className='w-full h-64 p-4 bg-transparent border border-zinc-100/50 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
             placeholder="What's on your mind today?"
             value={entry}
             onChange={(e) => setEntry(e.target.value)}
           />
           
           <button 
-            className='mt-4 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+            className='mt-4 flex items-center justify-center w-full gap-2 bg-transparent backdrop-blur-lg border border-zinc-100 text-zinc-100 px-6 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             onClick={handleSaveEntry}
             disabled={isSaving || !entry.trim()}
           >
@@ -154,7 +153,7 @@ export default function JournalPage() {
             <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
           </div>
         ) : savedEntries.length > 0 ? (
-          <div className='bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-lg shadow-lg p-6'>
+          <div className='bg-transparent backdrop-blur-3xl border border-zinc-300/10 rounded-lg shadow-lg p-6'>
             <h2 className='text-2xl font-medium text-white mb-4'>Previous Entries</h2>
             
             <div className='flex flex-col gap-4 max-h-96 overflow-y-auto'>
@@ -162,7 +161,7 @@ export default function JournalPage() {
                 <div key={entry.id} className='border-b border-zinc-800 pb-4'>
                   <div className='flex justify-between items-center mb-2'>
                     <span className='font-medium text-zinc-300'>{new Date(entry.date).toLocaleDateString()}</span>
-                    <span className='text-xs text-zinc-500'>{new Date(entry.createdAt).toLocaleTimeString()}</span>
+                    <span className='text-xs text-zinc-100'>{new Date(entry.createdAt).toLocaleTimeString()}</span>
                   </div>
                   <p className='text-zinc-400 whitespace-pre-wrap'>{entry.content}</p>
                 </div>

@@ -19,18 +19,11 @@ if (typeof window !== 'undefined') {
 export function playClickSound() {
   // For browsers that restrict audio before user interaction
   if (typeof window === 'undefined') return;
-  
-  try {
-    // Create a new audio instance each time to avoid issues with rapid clicks
-    const sound = new Audio('/audio/mouse-click.mp3');
-    sound.volume = 0.5;
-    sound.play().catch(err => {
-      // Silently handle autoplay restrictions
-      console.log('Click sound playback failed:', err);
-    });
-  } catch (error) {
-    console.log('Error playing click sound:', error);
-  }
+
+  // Create a new audio instance each time to avoid issues with rapid clicks
+  const sound = new Audio('/audio/mouse-click.mp3');
+  sound.volume = 0.5;
+  sound.play();
 }
 
 // Image validation
@@ -61,11 +54,11 @@ export const isValidImageUrl = (url: string) => {
   try {
     const parsedUrl = new URL(url);
     const pathname = parsedUrl.pathname.toLowerCase();
-    return pathname.endsWith('.jpg') || 
-           pathname.endsWith('.jpeg') || 
-           pathname.endsWith('.png') || 
-           pathname.endsWith('.gif') || 
-           pathname.endsWith('.webp');
+    return pathname.endsWith('.jpg') ||
+      pathname.endsWith('.jpeg') ||
+      pathname.endsWith('.png') ||
+      pathname.endsWith('.gif') ||
+      pathname.endsWith('.webp');
   } catch (e) {
     return false;
   }
