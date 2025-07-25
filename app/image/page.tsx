@@ -261,7 +261,7 @@ export default function ImagePage() {
 
     return (
         <>
-        <div className='w-full min-h-screen flex flex-col items-center bg-gradient-to-bl from-zinc-900 via-blue-100 to-zinc-900 lg:pt-18 pt-14'>
+        <div className='w-full min-h-screen flex flex-col items-center bg-gradient-to-br from-black via-zinc-900 to-black lg:pt-18 pt-14'>
             
 
             {/* Upload Button */}
