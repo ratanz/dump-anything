@@ -4,7 +4,7 @@ import { FloatingDock } from '@/components/ui/floating-dock'
 import { HomeIcon, ImageIcon, FileIcon, UploadIcon, LinkIcon, AlertCircleIcon, CheckCircleIcon, Loader2, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { validateImageFile, isValidImageUrl, playClickSound } from '@/app/lib/utils'
-import { easeInOut, motion, AnimatePresence } from 'motion/react'
+import { easeInOut, motion, AnimatePresence, easeIn } from 'motion/react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -431,7 +431,7 @@ export default function ImagePage() {
             </AnimatePresence>
 
             {/* Image Grid */}
-            <div className="w-full max-w-8xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="w-full max-w-8xl  p-4 px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {loading ? (
                     <div className="col-span-full text-center py-12">
                         <Loader2 className="h-10 w-10 text-blue-500 animate-spin mx-auto" />
@@ -439,7 +439,10 @@ export default function ImagePage() {
                     </div>
                 ) : images.length > 0 ? (
                     images.map((image) => (
-                        <div 
+                        <motion.div 
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0, transition: { duration: 0.7, delay: 0.4, staggerChildren: 0.2 }}}
+                            transition={{ damping: 60, stiffness: 30, bounce: 0.9 }}
                             key={image.id} 
                             className="relative aspect-square overflow-hidden hover:scale-105 transition-all duration-300 ease-in-out rounded-lg shadow-md border border-white/10 group"
                         >
@@ -466,7 +469,7 @@ export default function ImagePage() {
                                     )}
                                 </button>
                             </div>
-                        </div>
+                        </motion.div>
                     ))
                 ) : (
                     <div className="col-span-full text-center py-12">
