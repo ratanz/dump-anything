@@ -4,7 +4,7 @@ import { FloatingDock } from '@/components/ui/floating-dock'
 import { HomeIcon, ImageIcon, FileIcon, UploadIcon, LinkIcon, AlertCircleIcon, CheckCircleIcon, Loader2, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { validateImageFile, isValidImageUrl, playClickSound } from '@/app/lib/utils'
-import { motion } from 'motion/react'
+import { easeInOut, motion, AnimatePresence } from 'motion/react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -257,6 +257,13 @@ export default function ImagePage() {
                 return null;
         }
     };
+
+    const buttonVariants = {
+        initial: { opacity: 0, y: 30 },
+        animate: { opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.2, ease: easeInOut }},
+        exit: { opacity: 0, y: 30, transition: { duration: 0.3, ease: easeInOut }}
+    }
+    
     
 
     return (
@@ -285,10 +292,25 @@ export default function ImagePage() {
             </motion.div>
 
             {/* Upload Modal */}
+            <AnimatePresence>
             {showUploadModal && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-                    <div className="bg-transparent backdrop-blur-3xl rounded-lg p-14 border border-zinc-300/20 w-full max-w-md shadow-2xl">
-                        <h2 className="text-2xl font-bold mb-10 text-center text-gray-100">Upload Image</h2>
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                    <motion.div 
+                        variants={buttonVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        className="bg-transparent backdrop-blur-3xl rounded-lg p-14 border border-zinc-300/20 w-full max-w-md shadow-2xl">
+                        <motion.h2 
+                        variants={buttonVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        className="text-2xl font-bold mb-10 text-center text-gray-100">Upload Image</motion.h2>
                         
                         {/* Status message */}
                         {renderUploadStatus()}
@@ -301,7 +323,10 @@ export default function ImagePage() {
                         )}
                         
                         <div className="flex gap-4 mb-6">
-                            <button 
+                            <motion.button 
+                                initial={{ opacity: 0, x: -30 }}
+                                animate={{ opacity: 1, x: 0, transition: { duration: 0.5, delay: 0.2, ease: easeInOut }}}
+                                exit={{ opacity: 0, x: -30, transition: { duration: 0.3, ease: easeInOut }}}
                                 className={`flex-1 p-4 rounded-md flex items-center justify-center gap-2 font-medium ${uploadType === 'file' ? ' text-blue-400 border-2 border-blue-500' : 'bg-transparent backdrop-blur-3xl border border-zinc-300/50 hover:bg-zinc-950/20 cursor-pointer'}`}
                                 onClick={() => {
                                     setUploadType('file');
@@ -311,8 +336,11 @@ export default function ImagePage() {
                             >
                                 <UploadIcon size={20} />
                                 <span>Upload File</span>
-                            </button>
-                            <button 
+                            </motion.button>
+                            <motion.button 
+                                initial={{ opacity: 0, x: 30 }}
+                                animate={{ opacity: 1, x: 0, transition: { duration: 0.5, delay: 0.2, ease: easeInOut }}}
+                                exit={{ opacity: 0, x: 30, transition: { duration: 0.3, ease: easeInOut }}}
                                 className={`flex-1 p-4 rounded-md flex items-center justify-center gap-2 font-medium ${uploadType === 'url' ? 'text-blue-400 border-2 border-blue-500' : 'bg-transparent backdrop-blur-3xl border border-zinc-300/50 hover:bg-zinc-950/20 cursor-pointer'}`}
                                 onClick={() => {
                                     setUploadType('url');
@@ -322,7 +350,7 @@ export default function ImagePage() {
                             >
                                 <LinkIcon size={20} />
                                 <span>Image URL</span>
-                            </button>
+                            </motion.button>
                         </div>
                         
                         {uploadType === 'file' ? (
@@ -336,7 +364,10 @@ export default function ImagePage() {
                                     id="file-upload"
                                     disabled={uploadStatus === 'uploading'}
                                 />
-                                <label 
+                                <motion.label 
+                                    initial={{ opacity: 0, y: 30 }}
+                                    animate={{ opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.2, ease: easeInOut }}}
+                                    exit={{ opacity: 0, y: 30, transition: { duration: 0.3, ease: easeInOut }}}
                                     htmlFor="file-upload"
                                     className={`block w-full p-12 border-2 border-zinc-300/50 rounded-lg text-center cursor-pointer hover:bg-zinc-950/20 transition-colors ${uploadStatus === 'uploading' ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
@@ -352,11 +383,15 @@ export default function ImagePage() {
                                             <p className="text-sm text-gray-400 mt-2">PNG, JPG, GIF up to 10MB</p>
                                         </>
                                     )}
-                                </label>
+                                </motion.label>
                             </div>
                         ) : (
-                            <form onSubmit={handleUrlUpload} className="mb-3">
-                                <input 
+                            <form 
+                                onSubmit={handleUrlUpload} className="mb-3">
+                                <motion.input 
+                                    initial={{ opacity: 0, y: 30 }}
+                                    animate={{ opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.2, ease: easeInOut }}}
+                                    exit={{ opacity: 0, y: 30, transition: { duration: 0.3, ease: easeInOut }}}
                                     type="url" 
                                     value={imageUrl}
                                     onChange={(e) => setImageUrl(e.target.value)}
@@ -380,16 +415,20 @@ export default function ImagePage() {
                             </form>
                         )}
                         
-                        <button 
+                        <motion.button 
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.2, ease: easeInOut }}}
+                            exit={{ opacity: 0, y: 30, transition: { duration: 0.3, ease: easeInOut }}}
                             onClick={() => setShowUploadModal(false)}
-                            className={`w-full border border-zinc-300/50 bg-transparent backdrop-blur-3xl text-white p-3 rounded-md font-medium hover:bg-zinc-950/30 transition-colors ${uploadStatus === 'uploading' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`w-full border border-zinc-300/50 bg-transparent backdrop-blur-3xl cursor-pointer text-white p-3 rounded-md font-medium hover:bg-zinc-950/30 transition-colors ${uploadStatus === 'uploading' ? 'opacity-50 cursor-not-allowed' : ''}`}
                             disabled={uploadStatus === 'uploading'}
                         >
                             Cancel
-                        </button>
-                    </div>
-                </div>
+                        </motion.button>
+                    </motion.div>
+                </motion.div>
             )}
+            </AnimatePresence>
 
             {/* Image Grid */}
             <div className="w-full max-w-8xl p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
