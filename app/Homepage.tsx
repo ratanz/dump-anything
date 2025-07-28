@@ -27,8 +27,8 @@ const Homepage = () => {
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
-                  className='text-[10vw] md:text-7xl text-transparent  bg-clip-text bg-gradient-to-bl from-zinc-100 via-zinc-100 to-110% '>
+                  transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
+                  className='text-[10vw] md:text-7xl text-zinc-100/90'>
                   {char}
                 </motion.span>
               ))}
@@ -50,8 +50,8 @@ const Homepage = () => {
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
-                  className='text-[13vw] md:text-[7vw] text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 via-zinc-100 to-105%  '
+                  transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
+                  className='text-[13vw] md:text-[7vw] bg-clip-text text-zinc-100/90  '
                 >
                   {char}
                 </motion.span>
