@@ -6,13 +6,20 @@ import { signOut, useSession } from 'next-auth/react';
 import { User, LogOut, LogIn } from 'lucide-react';
 import Link from 'next/link';
 import 'remixicon/fonts/remixicon.css'
-import { easeInOut, motion, stagger } from 'motion/react'
+import { easeInOut, motion, stagger, AnimatePresence } from 'motion/react'
 
 const Navbar = () => {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const DEFAULT_VOLUME = 0.5; // Set default volume to 50%
   const { data: session, status } = useSession();
+
+  const navigationLinks = [
+    { name: "Home", path: "/" },
+    { name: "Image", path: "/image" },
+    { name: "Journal", path: "/journal" }
+  ];
 
   useEffect(() => {
     // Initialize audio on client-side only
@@ -50,6 +57,7 @@ const Navbar = () => {
 
   const handleMenuClick = () => {
     playClickSound();
+    setIsMenuOpen(!isMenuOpen);
   };
 
   const variants = {
@@ -57,6 +65,33 @@ const Navbar = () => {
     animate: { opacity: 1, transition: { duration: 0.5, delay: 0.5, ease: easeInOut }},
   }
 
+  const menuVariants = {
+    closed: { 
+      opacity: 0,
+      y: -20,
+      scale: 0.95,
+      transition: { 
+        duration: 0.2,
+        ease: easeInOut
+      }
+    },
+    open: { 
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { 
+        duration: 0.3,
+        ease: easeInOut,
+        staggerChildren: 0.1,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const menuItemVariants = {
+    closed: { opacity: 0, y: -10 },
+    open: { opacity: 1, y: 0 }
+  };
 
   return (
     <div className='w-full h-10 px-4 py-3 fixed inset-0 z-50'>
@@ -113,15 +148,44 @@ const Navbar = () => {
                   {isMusicPlaying ? <Music size={18} /> : <VolumeX size={18} />}
                 </motion.button>
                 
-                <motion.div 
-                  variants={variants}
-                  initial="initial"
-                  animate="animate"
-                  className="menu hover:cursor-pointer"
-                  onClick={handleMenuClick}
-                >
-                  <i className="ri-menu-3-line hover:text-blue-500"></i>
-                </motion.div>
+                <div className="relative">
+                  <motion.div 
+                    variants={variants}
+                    initial="initial"
+                    animate="animate"
+                    className="menu hover:cursor-pointer"
+                    onClick={handleMenuClick}
+                  >
+                    <i className={`${isMenuOpen ? 'ri-close-line' : 'ri-menu-3-line'} hover:text-blue-500`}></i>
+                  </motion.div>
+
+                  <AnimatePresence>
+                    {isMenuOpen && (
+                      <motion.div 
+                        className="absolute right-0 mt-2 w-48 bg-zinc-900/50 backdrop-blur-sm border border-zinc-400/30  rounded-md shadow-lg py-1 z-50"
+                        initial="closed"
+                        animate="open"
+                        exit="closed"
+                        variants={menuVariants}
+                      >
+                        {navigationLinks.map((link) => (
+                          <motion.div key={link.path} variants={menuItemVariants}>
+                            <Link 
+                              href={link.path} 
+                              className="block px-4 py-2 text-sm text-white hover:bg-zinc-400/10 transition-colors"
+                              onClick={() => {
+                                playClickSound();
+                                setIsMenuOpen(false);
+                              }}
+                            >
+                              {link.name}
+                            </Link>
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
         </div>
