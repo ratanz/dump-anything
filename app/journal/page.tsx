@@ -5,6 +5,7 @@ import { HomeIcon, ImageIcon, FileIcon, SaveIcon, Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { easeInOut, motion } from 'motion/react'
 
 interface JournalEntry {
   id: string;
@@ -116,7 +117,11 @@ export default function JournalPage() {
     <div className='w-full min-h-screen flex flex-col items-center pt-24 bg-gradient-to-bl from-zinc-800 via-blue-500 to-zinc-800'>
       
       <div className='w-full max-w-3xl px-4 flex flex-col gap-6'>
-        <div className='bg-transparent backdrop-blur-xl border border-zinc-300/10 rounded-lg shadow-lg p-6'>
+        <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.7, ease: easeInOut }}
+        className='bg-transparent backdrop-blur-xl border border-zinc-300/10 rounded-lg shadow-lg p-6'>
           <div className='flex justify-between items-center mb-4'>
             <h2 className='text-2xl font-medium text-white'>Today&apos;s Entry</h2>
             <span className='text-zinc-400'>{currentDate}</span>
@@ -146,14 +151,18 @@ export default function JournalPage() {
               </>
             )}
           </button>
-        </div>
+        </motion.div>
         
         {isLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
           </div>
         ) : savedEntries.length > 0 ? (
-          <div className='bg-transparent backdrop-blur-3xl border border-zinc-300/10 rounded-lg shadow-lg p-6'>
+          <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.7, ease: easeInOut }}
+          className='bg-transparent backdrop-blur-3xl border border-zinc-300/10 rounded-lg shadow-lg p-6'>
             <h2 className='text-2xl font-medium text-white mb-4'>Previous Entries</h2>
             
             <div className='flex flex-col gap-4 max-h-96 overflow-y-auto'>
@@ -167,7 +176,7 @@ export default function JournalPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
         ) : (
           <div className='bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-lg shadow-lg p-6 text-center'>
             <p className='text-zinc-400'>No journal entries yet. Start writing today!</p>
