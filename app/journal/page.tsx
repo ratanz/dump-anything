@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { FloatingDock } from '@/components/ui/floating-dock'
-import { HomeIcon, ImageIcon, FileIcon, SaveIcon, Loader2 } from 'lucide-react'
+import { HomeIcon, ImageIcon, FileIcon, SaveIcon, Loader2, Trash2Icon, XIcon, CheckIcon } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -20,6 +20,8 @@ export default function JournalPage() {
   const [currentDate, setCurrentDate] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const { data: session, status } = useSession()
   const router = useRouter()
 
@@ -82,6 +84,34 @@ export default function JournalPage() {
       console.error('Error saving journal entry:', error)
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const initiateDelete = (id: string) => {
+    setConfirmDelete(id);
+  };
+
+  const cancelDelete = () => {
+    setConfirmDelete(null);
+  };
+
+  const handleDeleteEntry = async (id: string) => {
+    if (!session?.user) return
+
+    setIsDeleting(id)
+    try {
+      const response = await fetch(`/api/journal?id=${id}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        setSavedEntries(prev => prev.filter(entry => entry.id !== id))
+      }
+    } catch (error) {
+      console.error('Error deleting journal entry:', error)
+    } finally {
+      setIsDeleting(null)
+      setConfirmDelete(null)
     }
   }
 
@@ -170,7 +200,41 @@ export default function JournalPage() {
                 <div key={entry.id} className='border-b border-zinc-800 pb-4'>
                   <div className='flex justify-between items-center mb-2'>
                     <span className='font-medium text-zinc-300'>{new Date(entry.date).toLocaleDateString()}</span>
-                    <span className='text-xs text-zinc-100'>{new Date(entry.createdAt).toLocaleTimeString()}</span>
+                    <div className='flex items-center gap-2'>
+                      <span className='text-xs text-zinc-100'>{new Date(entry.createdAt).toLocaleTimeString()}</span>
+                      
+                      {confirmDelete === entry.id ? (
+                        <div className="flex items-center gap-1">
+                          <button 
+                            onClick={() => handleDeleteEntry(entry.id)}
+                            disabled={isDeleting === entry.id}
+                            className='text-green-500 hover:text-green-400 transition-colors'
+                            aria-label="Confirm delete"
+                          >
+                            {isDeleting === entry.id ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              <CheckIcon size={16} />
+                            )}
+                          </button>
+                          <button 
+                            onClick={cancelDelete}
+                            className='text-red-500 hover:text-red-400 transition-colors'
+                            aria-label="Cancel delete"
+                          >
+                            <XIcon size={16} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => initiateDelete(entry.id)}
+                          className='text-zinc-400 hover:text-red-500 transition-colors'
+                          aria-label="Delete entry"
+                        >
+                          <Trash2Icon size={16} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <p className='text-zinc-400 whitespace-pre-wrap'>{entry.content}</p>
                 </div>

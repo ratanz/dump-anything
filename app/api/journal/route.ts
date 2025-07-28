@@ -97,4 +97,73 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+// DELETE handler to delete a journal entry
+export async function DELETE(request: Request) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get the user from the session
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Get the entry ID from the URL
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Entry ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // First check if the entry exists and belongs to this user
+    const entry = await prisma.journalEntry.findUnique({
+      where: { id },
+    });
+
+    if (!entry) {
+      return NextResponse.json(
+        { error: 'Journal entry not found' },
+        { status: 404 }
+      );
+    }
+
+    if (entry.userId !== user.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized to delete this entry' },
+        { status: 403 }
+      );
+    }
+
+    // Delete the journal entry
+    await prisma.journalEntry.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting journal entry:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete journal entry' },
+      { status: 500 }
+    );
+  }
 } 
