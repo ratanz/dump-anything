@@ -132,8 +132,8 @@ export default function JournalPage() {
         <div className="max-w-md w-full bg-zinc-900/80 backdrop-blur-md rounded-xl border border-zinc-800 p-8 shadow-xl text-center">
           <h1 className="text-2xl font-bold text-white mb-4">Authentication Required</h1>
           <p className="text-zinc-400 mb-6">Please sign in to access your journal</p>
-          <Link 
-            href="/auth/signin" 
+          <Link
+            href="/auth/signin"
             className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors"
           >
             Sign In
@@ -145,26 +145,26 @@ export default function JournalPage() {
 
   return (
     <div className='w-full min-h-screen flex flex-col items-center pt-24 bg-gradient-to-bl from-zinc-800 via-blue-500 to-zinc-800'>
-      
+
       <div className='w-full max-w-3xl px-4 flex flex-col gap-6'>
-        <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.7, ease: easeInOut }}
-        className='bg-transparent backdrop-blur-xl border border-zinc-300/10 rounded-lg shadow-lg p-6'>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.7, ease: easeInOut }}
+          className='bg-transparent backdrop-blur-xl border border-zinc-300/10 rounded-lg shadow-lg p-6'>
           <div className='flex justify-between items-center mb-4'>
             <h2 className='text-2xl font-medium text-white'>Today&apos;s Entry</h2>
             <span className='text-zinc-400'>{currentDate}</span>
           </div>
-          
+
           <textarea
             className='w-full h-64 p-4 bg-transparent border border-zinc-100/50 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
             placeholder="What's on your mind today?"
             value={entry}
             onChange={(e) => setEntry(e.target.value)}
           />
-          
-          <button 
+
+          <button
             className='mt-4 flex items-center justify-center w-full gap-2 bg-transparent backdrop-blur-lg border border-zinc-100 text-zinc-100 px-6 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
             onClick={handleSaveEntry}
             disabled={isSaving || !entry.trim()}
@@ -182,30 +182,30 @@ export default function JournalPage() {
             )}
           </button>
         </motion.div>
-        
+
         {isLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
           </div>
         ) : savedEntries.length > 0 ? (
-          <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.7, ease: easeInOut }}
-          className='bg-transparent backdrop-blur-3xl border border-zinc-300/10 rounded-lg shadow-lg p-6'>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.7, ease: easeInOut }}
+            className='bg-transparent backdrop-blur-3xl border border-zinc-300/10 rounded-lg shadow-lg p-6'>
             <h2 className='text-2xl font-medium text-white mb-4'>Previous Entries</h2>
-            
+
             <div className='flex flex-col gap-4 max-h-96 overflow-y-auto'>
               {savedEntries.map((entry) => (
                 <div key={entry.id} className='border-b border-zinc-800 pb-4'>
                   <div className='flex justify-between items-center mb-2'>
                     <span className='font-medium text-zinc-300'>{new Date(entry.date).toLocaleDateString()}</span>
-                    <div className='flex items-center gap-2'>
-                      <span className='text-xs text-zinc-100'>{new Date(entry.createdAt).toLocaleTimeString()}</span>
-                      
+                    <div className='flex items-center gap-2 '>
+                      <span className='text-sm text-zinc-100'>{new Date(entry.createdAt).toLocaleTimeString()}</span>
+
                       {confirmDelete === entry.id ? (
                         <div className="flex items-center gap-1">
-                          <button 
+                          <button
                             onClick={() => handleDeleteEntry(entry.id)}
                             disabled={isDeleting === entry.id}
                             className='text-green-500 hover:text-green-400 transition-colors'
@@ -217,7 +217,7 @@ export default function JournalPage() {
                               <CheckIcon size={16} />
                             )}
                           </button>
-                          <button 
+                          <button
                             onClick={cancelDelete}
                             className='text-red-500 hover:text-red-400 transition-colors'
                             aria-label="Cancel delete"
@@ -226,9 +226,9 @@ export default function JournalPage() {
                           </button>
                         </div>
                       ) : (
-                        <button 
+                        <button
                           onClick={() => initiateDelete(entry.id)}
-                          className='text-zinc-400 hover:text-red-500 transition-colors'
+                          className='text-zinc-100 hover:text-red-500 transition-colors'
                           aria-label="Delete entry"
                         >
                           <Trash2Icon size={16} />
@@ -240,20 +240,22 @@ export default function JournalPage() {
                 </div>
               ))}
             </div>
+
           </motion.div>
         ) : (
           <div className='bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-lg shadow-lg p-6 text-center'>
             <p className='text-zinc-400'>No journal entries yet. Start writing today!</p>
           </div>
         )}
+
       </div>
-      
+
       <div className='fixed bottom-4'>
         <FloatingDock items={[
-          {title: "Home", icon: <HomeIcon />, href: "/"},
-          {title: "Image", icon: <ImageIcon />, href: "/image"},
-          {title: "Journal", icon: <FileIcon />, href: "/journal"},
-        ]}/>
+          { title: "Home", icon: <HomeIcon />, href: "/" },
+          { title: "Image", icon: <ImageIcon />, href: "/image" },
+          { title: "Journal", icon: <FileIcon />, href: "/journal" },
+        ]} />
       </div>
     </div>
   )
