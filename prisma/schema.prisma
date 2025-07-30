@@ -81,6 +81,7 @@ model JournalEntry {
   content   String   @db.Text
   date      DateTime
   userId    String
+  mood      String?  // User's mood when writing the entry
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

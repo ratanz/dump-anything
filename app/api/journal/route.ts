@@ -36,7 +36,27 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(entries);
+    // Process entries to extract mood from content
+    const processedEntries = entries.map(entry => {
+      let mood = null;
+      let content = entry.content;
+      
+      // Check if content has mood marker - look for [MOOD:X] pattern
+      const moodMatch = content.match(/^\[MOOD:(.*?)\]\n/);
+      if (moodMatch) {
+        mood = moodMatch[1];
+        // Remove the mood marker from content
+        content = content.replace(/^\[MOOD:(.*?)\]\n/, '');
+      }
+      
+      return {
+        ...entry,
+        content,
+        mood
+      };
+    });
+
+    return NextResponse.json(processedEntries);
   } catch (error) {
     console.error('Error fetching journal entries:', error);
     return NextResponse.json(
@@ -71,7 +91,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { content, date } = body;
+    const { content, date, mood } = body;
 
     if (!content || !date) {
       return NextResponse.json(
@@ -80,16 +100,31 @@ export async function POST(request: Request) {
       );
     }
 
+    // Store mood in the content if it exists
+    let finalContent = content;
+    if (mood) {
+      // Add the mood at the beginning of the content with a special marker
+      finalContent = `[MOOD:${mood}]\n${content}`;
+    }
+
     // Create the journal entry
     const entry = await prisma.journalEntry.create({
       data: {
-        content,
+        content: finalContent,
         date: new Date(date),
         userId: user.id,
       },
     });
 
-    return NextResponse.json(entry, { status: 201 });
+    // Add the mood to the returned entry for the frontend
+    // and remove the mood marker from the content for immediate display
+    const returnEntry = {
+      ...entry,
+      content: content, // Use the original content without the mood marker
+      mood: mood || null
+    };
+
+    return NextResponse.json(returnEntry, { status: 201 });
   } catch (error) {
     console.error('Error creating journal entry:', error);
     return NextResponse.json(
