@@ -1,18 +1,53 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { FloatingDock } from '@/components/ui/floating-dock'
-import { HomeIcon, ImageIcon, FileIcon, SaveIcon, Loader2, Trash2Icon, XIcon, CheckIcon } from 'lucide-react'
+import { HomeIcon, ImageIcon, FileIcon, SaveIcon, Loader2, Trash2Icon, XIcon, CheckIcon, SmileIcon } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { easeInOut, motion } from 'motion/react'
+import Image from 'next/image'
 
 interface JournalEntry {
   id: string;
   content: string;
   date: string;
+  mood?: string | null;
   createdAt: string;
 }
+
+// Format date in a more readable way
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }).format(date);
+};
+
+// Format time in a more readable way
+const formatTime = (dateString: string) => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true
+  }).format(date);
+};
+
+// Available mood options
+const moodOptions = [
+  { emoji: "😊", name: "Happy" },
+  { emoji: "😔", name: "Sad" },
+  { emoji: "😌", name: "Calm" },
+  { emoji: "😡", name: "Angry" },
+  { emoji: "😴", name: "Tired" },
+  { emoji: "🤔", name: "Thoughtful" },
+  { emoji: "😎", name: "Cool" },
+  { emoji: "🥳", name: "Excited" }
+];
 
 export default function JournalPage() {
   const [entry, setEntry] = useState('')
@@ -22,6 +57,8 @@ export default function JournalPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [selectedMood, setSelectedMood] = useState<string | null>(null)
+  const [showMoodSelector, setShowMoodSelector] = useState(false)
   const { data: session, status } = useSession()
   const router = useRouter()
 
@@ -72,6 +109,7 @@ export default function JournalPage() {
         body: JSON.stringify({
           content: entry,
           date: currentDate,
+          mood: selectedMood
         }),
       })
 
@@ -79,9 +117,15 @@ export default function JournalPage() {
         const newEntry = await response.json()
         setSavedEntries(prev => [newEntry, ...prev])
         setEntry('')
+        setSelectedMood(null)
+      } else {
+        const errorData = await response.json()
+        console.error('Error from server:', errorData)
+        alert('Failed to save journal entry. Please try again.')
       }
     } catch (error) {
       console.error('Error saving journal entry:', error)
+      alert('An unexpected error occurred. Please try again.')
     } finally {
       setIsSaving(false)
     }
@@ -144,7 +188,7 @@ export default function JournalPage() {
   }
 
   return (
-    <div className='w-full min-h-screen flex flex-col items-center pt-24 bg-gradient-to-bl from-zinc-800 via-blue-500 to-zinc-800'>
+    <div className='w-full min-h-screen flex flex-col items-center pt-24 bg-gradient-to-tl from-black via-zinc-900 to-black'>
 
       <div className='w-full max-w-3xl px-4 flex flex-col gap-6'>
         <motion.div
@@ -154,7 +198,42 @@ export default function JournalPage() {
           className='bg-transparent backdrop-blur-xl border border-zinc-300/10 rounded-lg shadow-lg p-6'>
           <div className='flex justify-between items-center mb-4'>
             <h2 className='text-2xl font-medium text-white'>Today&apos;s Entry</h2>
-            <span className='text-zinc-400'>{currentDate}</span>
+            <span className='text-zinc-400'>{formatDate(currentDate)}</span>
+          </div>
+
+          {/* Mood selector */}
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <button 
+                onClick={() => setShowMoodSelector(!showMoodSelector)}
+                className="flex items-center gap-1 text-zinc-300 hover:text-white transition-colors"
+              >
+                <SmileIcon size={18} />
+                <span>{selectedMood ? `Feeling: ${selectedMood}` : "How are you feeling?"}</span>
+              </button>
+            </div>
+            
+            {showMoodSelector && (
+              <div className="flex flex-wrap gap-2 p-2 bg-zinc-800/20 border border-zinc-300/20 backdrop-blur-md rounded-md mb-2">
+                {moodOptions.map(mood => (
+                  <button
+                    key={mood.name}
+                    onClick={() => {
+                      setSelectedMood(mood.name);
+                      setShowMoodSelector(false);
+                    }}
+                    className={`flex items-center gap-1 px-3 py-1 rounded-full transition-colors ${
+                      selectedMood === mood.name 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-zinc-700/30 border border-zinc-700/40 text-zinc-200 hover:bg-zinc-800 hover:cursor-pointer'
+                    }`}
+                  >
+                    <span>{mood.emoji}</span>
+                    <span>{mood.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <textarea
@@ -199,9 +278,16 @@ export default function JournalPage() {
               {savedEntries.map((entry) => (
                 <div key={entry.id} className='border-b border-zinc-800 pb-4'>
                   <div className='flex justify-between items-center mb-2'>
-                    <span className='font-medium text-zinc-300'>{new Date(entry.date).toLocaleDateString()}</span>
+                    <div className="flex items-center gap-2">
+                      <span className='font-medium text-zinc-300'>{formatDate(entry.date)}</span>
+                      {entry.mood && (
+                        <span className="px-2 py-0.5 bg-zinc-800 rounded-full text-sm">
+                          {moodOptions.find(m => m.name === entry.mood)?.emoji || ''} {entry.mood}
+                        </span>
+                      )}
+                    </div>
                     <div className='flex items-center gap-2 '>
-                      <span className='text-sm text-zinc-100'>{new Date(entry.createdAt).toLocaleTimeString()}</span>
+                      <span className='text-sm text-zinc-100'>{formatTime(entry.createdAt)}</span>
 
                       {confirmDelete === entry.id ? (
                         <div className="flex items-center gap-1">
@@ -236,11 +322,12 @@ export default function JournalPage() {
                       )}
                     </div>
                   </div>
+                  
                   <p className='text-zinc-400 whitespace-pre-wrap'>{entry.content}</p>
                 </div>
               ))}
+              
             </div>
-
           </motion.div>
         ) : (
           <div className='bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-lg shadow-lg p-6 text-center'>
