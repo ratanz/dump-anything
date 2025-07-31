@@ -607,7 +607,7 @@ export default function ImagePage() {
             overflow: visible;
             cursor: grab;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.98);
             transform-origin: center center;
             top: 50%;
             transform: translateY(-50%);
