@@ -281,7 +281,7 @@ export default function JournalPage() {
                     <div className="flex items-center gap-2">
                       <span className='font-medium text-zinc-300'>{formatDate(entry.date)}</span>
                       {entry.mood && (
-                        <span className="px-2 py-0.5 bg-zinc-800 rounded-full text-sm">
+                        <span className="px-2 py-0.5 bg-zinc-700/20 border border-zinc-300/10 rounded-full text-sm">
                           {moodOptions.find(m => m.name === entry.mood)?.emoji || ''} {entry.mood}
                         </span>
                       )}
