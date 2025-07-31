@@ -4,7 +4,7 @@ import { FloatingDock } from '@/components/ui/floating-dock'
 import { HomeIcon, ImageIcon, FileIcon, UploadIcon, LinkIcon, AlertCircleIcon, CheckCircleIcon, Loader2, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { validateImageFile, isValidImageUrl, playClickSound } from '@/app/lib/utils'
-import { easeInOut, motion, AnimatePresence, easeIn } from 'motion/react'
+import { easeInOut, motion, AnimatePresence } from 'motion/react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -29,6 +29,7 @@ export default function ImagePage() {
     const [error, setError] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const sliderRef = useRef<HTMLDivElement>(null);
     // Add client-side only rendering flag
     const [isClient, setIsClient] = useState(false);
     const { data: session, status } = useSession();
@@ -38,6 +39,307 @@ export default function ImagePage() {
     useEffect(() => {
         setIsClient(true);
     }, []);
+    
+    // Initialize the slider with parallax effect
+    useEffect(() => {
+        if (!isClient || !sliderRef.current || images.length === 0) return;
+        
+        const config = {
+            SCROLL_SPEED: 1.75,
+            LERP_FACTOR: 0.05,
+            MAX_VELOCITY: 150,
+        };
+
+        const state = {
+            currentX: 0,
+            targetX: 0,
+            slideWidth: window.innerWidth < 1000 ? 215 : 350, // Match the CSS width
+            isDragging: false,
+            startX: 0,
+            lastX: 0,
+            lastMouseX: 0,
+            lastScrollTime: Date.now(),
+            isMoving: false,
+            velocity: 0,
+            lastCurrentX: 0,
+            dragDistance: 0,
+            hasActuallyDragged: false,
+            isMobile: window.innerWidth < 1000,
+            totalWidth: 0,
+            sequenceWidth: 0,
+        };
+
+        const track = sliderRef.current.querySelector(".slide-track");
+        if (!track) return;
+        
+        const slides = Array.from(track.querySelectorAll(".slide"));
+        if (slides.length === 0) return;
+        
+        // Calculate the width of one sequence of slides (all unique images)
+        const slideMargin = 40; // 20px on each side
+        state.sequenceWidth = images.length * (state.slideWidth + slideMargin);
+        
+        // Set initial position to center the first set of images
+        state.currentX = -state.sequenceWidth / 2;
+        state.targetX = state.currentX;
+
+        // Keep track of whether we're currently in a loop transition
+        let isLoopTransitioning = false;
+        
+        function updateSlidePositions() {
+            if (!track) return;
+            
+            // Handle infinite scrolling by resetting position when reaching threshold
+            // Only reset position when not currently in a transition and not dragging
+            if (!state.isDragging && !isLoopTransitioning) {
+                if (state.currentX > -state.sequenceWidth * 0.25) {
+                    // If scrolled too far to the right, jump back without animation
+                    isLoopTransitioning = true;
+                    
+                    // Apply the transform immediately with no transition
+                    (track as HTMLElement).style.transition = 'none';
+                    (track as HTMLElement).style.transform = `translate3d(${state.currentX}px, 0, 0)`;
+                    
+                    // Force reflow to ensure the transition is disabled
+                    void (track as HTMLElement).offsetWidth;
+                    
+                    // Update position values
+                    state.currentX -= state.sequenceWidth;
+                    state.targetX -= state.sequenceWidth;
+                    
+                    // Apply the new position immediately
+                    (track as HTMLElement).style.transform = `translate3d(${state.currentX}px, 0, 0)`;
+                    
+                    // Reset the transition state after a short delay
+                    setTimeout(() => {
+                        isLoopTransitioning = false;
+                    }, 50);
+                    
+                } else if (state.currentX < -state.sequenceWidth * 1.75) {
+                    // If scrolled too far to the left, jump forward without animation
+                    isLoopTransitioning = true;
+                    
+                    // Apply the transform immediately with no transition
+                    (track as HTMLElement).style.transition = 'none';
+                    (track as HTMLElement).style.transform = `translate3d(${state.currentX}px, 0, 0)`;
+                    
+                    // Force reflow to ensure the transition is disabled
+                    void (track as HTMLElement).offsetWidth;
+                    
+                    // Update position values
+                    state.currentX += state.sequenceWidth;
+                    state.targetX += state.sequenceWidth;
+                    
+                    // Apply the new position immediately
+                    (track as HTMLElement).style.transform = `translate3d(${state.currentX}px, 0, 0)`;
+                    
+                    // Reset the transition state after a short delay
+                    setTimeout(() => {
+                        isLoopTransitioning = false;
+                    }, 50);
+                }
+            }
+            
+            // Apply smooth transition only when not in a loop transition
+            if (!isLoopTransitioning) {
+                (track as HTMLElement).style.transition = state.isDragging ? 'none' : 'transform 0.05s linear';
+                (track as HTMLElement).style.transform = `translate3d(${state.currentX}px, 0, 0)`;
+            }
+        }
+
+        function updateParallax() {
+            const viewportCenter = window.innerWidth / 2;
+
+            slides.forEach((slide) => {
+                const img = slide.querySelector("img");
+                if (!img) return;
+
+                const slideRect = slide.getBoundingClientRect();
+
+                // Optimize by skipping slides that are far outside the viewport
+                if (
+                    slideRect.right < -1000 ||
+                    slideRect.left > window.innerWidth + 1000
+                ) {
+                    return;
+                }
+
+                const slideCenter = slideRect.left + slideRect.width / 2;
+                const distanceFromCenter = slideCenter - viewportCenter;
+                
+                // Enhanced parallax effect with better scaling
+                // More subtle parallax effect for smoother visual flow
+                const parallaxOffset = distanceFromCenter * -0.1;
+                
+                // Apply different scale based on distance from center for depth effect
+                // Use a minimal scaling effect
+                const distanceRatio = Math.abs(distanceFromCenter) / (window.innerWidth / 2);
+                const scale = 1.1 + (distanceRatio * 0.1); // Minimal scale for very subtle effect
+                
+                // Apply transform with no transition during dragging for smoother experience
+                if (state.isDragging || isLoopTransitioning) {
+                    img.style.transition = 'none';
+                } else {
+                    img.style.transition = 'transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                }
+                
+                img.style.transform = `translateX(${parallaxOffset}px) scale(${scale})`;
+            });
+        }
+
+        function updateMovingState() {
+            state.velocity = Math.abs(state.currentX - state.lastCurrentX);
+            state.lastCurrentX = state.currentX;
+
+            const isSlowEnough = state.velocity < 0.1;
+            const hasBeenStillLongEnough = Date.now() - state.lastScrollTime > 200;
+            state.isMoving =
+                state.hasActuallyDragged || !isSlowEnough || !hasBeenStillLongEnough;
+
+            document.documentElement.style.setProperty(
+                "--slider-moving",
+                state.isMoving ? "1" : "0"
+            );
+        }
+
+        function animate() {
+            // Use a smoother LERP factor based on velocity
+            const dynamicLerpFactor = Math.min(
+                config.LERP_FACTOR * 1.5,
+                Math.max(config.LERP_FACTOR * 0.5, config.LERP_FACTOR / (1 + state.velocity * 0.01))
+            );
+            
+            state.currentX += (state.targetX - state.currentX) * dynamicLerpFactor;
+
+            updateMovingState();
+            updateSlidePositions();
+            updateParallax();
+
+            requestAnimationFrame(animate);
+        }
+
+        function handleWheel(e: WheelEvent) {
+            if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+                return;
+            }
+
+            e.preventDefault();
+            state.lastScrollTime = Date.now();
+
+            const scrollDelta = e.deltaY * config.SCROLL_SPEED;
+            state.targetX -= Math.max(
+                Math.min(scrollDelta, config.MAX_VELOCITY),
+                -config.MAX_VELOCITY
+            );
+        }
+
+        function handleTouchStart(e: TouchEvent) {
+            state.isDragging = true;
+            state.startX = e.touches[0].clientX;
+            state.lastX = state.targetX;
+            state.dragDistance = 0;
+            state.hasActuallyDragged = false;
+            state.lastScrollTime = Date.now();
+        }
+
+        function handleTouchMove(e: TouchEvent) {
+            if (!state.isDragging) return;
+
+            const deltaX = (e.touches[0].clientX - state.startX) * 1.5;
+            state.targetX = state.lastX + deltaX;
+            state.dragDistance = Math.abs(deltaX);
+
+            if (state.dragDistance > 5) {
+                state.hasActuallyDragged = true;
+            }
+
+            state.lastScrollTime = Date.now();
+        }
+
+        function handleTouchEnd() {
+            state.isDragging = false;
+            setTimeout(() => {
+                state.hasActuallyDragged = false;
+            }, 100);
+        }
+
+        function handleMouseDown(e: MouseEvent) {
+            e.preventDefault();
+            state.isDragging = true;
+            state.startX = e.clientX;
+            state.lastMouseX = e.clientX;
+            state.lastX = state.targetX;
+            state.dragDistance = 0;
+            state.hasActuallyDragged = false;
+            state.lastScrollTime = Date.now();
+        }
+
+        function handleMouseMove(e: MouseEvent) {
+            if (!state.isDragging) return;
+
+            e.preventDefault();
+            const deltaX = (e.clientX - state.lastMouseX) * 2;
+            state.targetX += deltaX;
+            state.lastMouseX = e.clientX;
+            state.dragDistance += Math.abs(deltaX);
+
+            if (state.dragDistance > 5) {
+                state.hasActuallyDragged = true;
+            }
+
+            state.lastScrollTime = Date.now();
+        }
+
+        function handleMouseUp() {
+            state.isDragging = false;
+            setTimeout(() => {
+                state.hasActuallyDragged = false;
+            }, 100);
+        }
+
+        function handleResize() {
+            state.isMobile = window.innerWidth < 1000;
+            state.slideWidth = state.isMobile ? 215 : 350; // Match the CSS width
+            
+            // Recalculate sequence width
+            const slideMargin = 40; // 20px on each side
+            state.sequenceWidth = images.length * (state.slideWidth + slideMargin);
+        }
+
+        // Add event listeners
+        const slider = sliderRef.current;
+        if (!slider) return;
+
+        slider.addEventListener("wheel", handleWheel, { passive: false });
+        slider.addEventListener("touchstart", handleTouchStart);
+        slider.addEventListener("touchmove", handleTouchMove);
+        slider.addEventListener("touchend", handleTouchEnd);
+        slider.addEventListener("mousedown", handleMouseDown);
+        slider.addEventListener("mouseleave", handleMouseUp);
+        slider.addEventListener("dragstart", (e) => e.preventDefault());
+
+        document.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("mouseup", handleMouseUp);
+        window.addEventListener("resize", handleResize);
+
+        // Start animation
+        animate();
+
+        // Cleanup function
+        return () => {
+            slider.removeEventListener("wheel", handleWheel);
+            slider.removeEventListener("touchstart", handleTouchStart);
+            slider.removeEventListener("touchmove", handleTouchMove);
+            slider.removeEventListener("touchend", handleTouchEnd);
+            slider.removeEventListener("mousedown", handleMouseDown);
+            slider.removeEventListener("mouseleave", handleMouseUp);
+            slider.removeEventListener("dragstart", (e) => e.preventDefault());
+
+            document.removeEventListener("mousemove", handleMouseMove);
+            document.removeEventListener("mouseup", handleMouseUp);
+            window.removeEventListener("resize", handleResize);
+        };
+    }, [isClient, images.length]);
 
     // Redirect to login if not authenticated
     useEffect(() => {
@@ -266,8 +568,126 @@ export default function ImagePage() {
     
     
 
+    // CSS styles for the parallax slider
+    const sliderStyles = `
+        .slider {
+            position: relative;
+            width: 100vw;
+            height: 70vh;
+            min-height: 500px;
+            overflow: hidden;
+            cursor: grab;
+            margin-top: 20px;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        
+        .slider:active {
+            cursor: grabbing;
+        }
+        
+        .slide-track {
+            display: flex;
+            position: absolute;
+            will-change: transform;
+            height: 100%;
+            width: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        
+        .slide {
+            position: relative;
+            flex-shrink: 0;
+            width: 350px;
+            height: 500px;
+            margin: 0 20px;
+            border-radius: 20px;
+            overflow: visible;
+            cursor: grab;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform-origin: center center;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .slide:hover {
+            transform: translateY(calc(-50% - 5px)) scale(1.005);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+        
+        .slide-image {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            border-radius: 20px;
+        }
+        
+        .slide-image img {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+            will-change: transform;
+            transform: scale(1.05);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .delete-button {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 20;
+        }
+        
+        .delete-button button {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            border-radius: 50%;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .slide:hover .delete-button {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Custom scrollbar for the slider */
+        .slider::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* CSS variable for slider state */
+        :root {
+            --slider-moving: 0;
+        }
+        
+        @media (max-width: 1000px) {
+            .slide {
+                width: 215px;
+                height: 80%;
+                margin-top: auto;
+            }
+            
+            .slider {
+                height: 60vh;
+            }
+        }
+    `;
+
     return (
         <>
+        <style jsx>{sliderStyles}</style>
         <div className='w-full min-h-screen flex flex-col items-center bg-gradient-to-br from-black via-zinc-900 to-black lg:pt-18 pt-14'>
             
 
@@ -430,49 +850,113 @@ export default function ImagePage() {
             )}
             </AnimatePresence>
 
-            {/* Image Grid */}
-            <div className="w-full max-w-8xl  p-4 px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {/* Parallax Image Slider */}
+            <div className="w-full max-w-8xl p-4 px-8">
                 {loading ? (
-                    <div className="col-span-full text-center py-12">
+                    <div className="text-center py-12">
                         <Loader2 className="h-10 w-10 text-blue-500 animate-spin mx-auto" />
                         <p className="mt-4 text-white">Loading images...</p>
                     </div>
                 ) : images.length > 0 ? (
-                    images.map((image) => (
-                        <motion.div 
-                            initial={{ opacity: 0, y: 50 }}
-                            animate={{ opacity: 1, y: 0, transition: { duration: 0.7, delay: 0.4, staggerChildren: 0.2 }}}
-                            transition={{ damping: 60, stiffness: 30, bounce: 0.9 }}
-                            key={image.id} 
-                            className="relative aspect-square overflow-hidden hover:scale-105 transition-all duration-300 ease-in-out rounded-lg shadow-md border border-white/10 group"
-                        >
-                            <Image
-                                src={image.url}
-                                alt={image.fileName || 'Image'}
-                                fill
-                                className="object-cover transition-transform"
-                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                priority
-                            />
+                    <div className="slider" ref={sliderRef}>
+                        <div className="slide-track">
+                            {/* First set of images */}
+                            {images.map((image) => (
+                                <div key={`first-${image.id}`} className="slide">
+                                    <div className="slide-image">
+                                        <Image
+                                            src={image.url}
+                                            alt={image.fileName || 'Image'}
+                                            fill
+                                            className="object-cover"
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                            priority
+                                        />
+                                    </div>
+                                    <div className="delete-button">
+                                        <button 
+                                            className="p-2 rounded-full hover:bg-red-600/80 cursor-pointer transition-all"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteImage(image.id);
+                                            }}
+                                            disabled={deletingId === image.id}
+                                        >
+                                            {deletingId === image.id ? (
+                                                <Loader2 size={20} className="text-white animate-spin" />
+                                            ) : (
+                                                <Trash2 size={20} className="text-white" />
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                             
-                            {/* Delete Icon on Hover */}
-                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-t from-black/20 to-transparent transition-opacity flex items-end justify-center p-3">
-                                <button 
-                                    className="p-2 rounded-full transform hover:scale-110 hover:bg-red-600/80 cursor-pointer transition-transform"
-                                    onClick={() => handleDeleteImage(image.id)}
-                                    disabled={deletingId === image.id}
-                                >
-                                    {deletingId === image.id ? (
-                                        <Loader2 size={20} className="text-white animate-spin" />
-                                    ) : (
-                                        <Trash2 size={20} className="text-white" />
-                                    )}
-                                </button>
-                            </div>
-                        </motion.div>
-                    ))
+                            {/* Second set of images (duplicate) */}
+                            {images.map((image) => (
+                                <div key={`second-${image.id}`} className="slide">
+                                    <div className="slide-image">
+                                        <Image
+                                            src={image.url}
+                                            alt={image.fileName || 'Image'}
+                                            fill
+                                            className="object-cover"
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        />
+                                    </div>
+                                    <div className="delete-button">
+                                        <button 
+                                            className="p-2 rounded-full hover:bg-red-600/80 cursor-pointer transition-all"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteImage(image.id);
+                                            }}
+                                            disabled={deletingId === image.id}
+                                        >
+                                            {deletingId === image.id ? (
+                                                <Loader2 size={20} className="text-white animate-spin" />
+                                            ) : (
+                                                <Trash2 size={20} className="text-white" />
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                            
+                            {/* Third set of images (duplicate) */}
+                            {images.map((image) => (
+                                <div key={`third-${image.id}`} className="slide">
+                                    <div className="slide-image">
+                                        <Image
+                                            src={image.url}
+                                            alt={image.fileName || 'Image'}
+                                            fill
+                                            className="object-cover"
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        />
+                                    </div>
+                                    <div className="delete-button">
+                                        <button 
+                                            className="p-2 rounded-full hover:bg-red-600/80 cursor-pointer transition-all"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteImage(image.id);
+                                            }}
+                                            disabled={deletingId === image.id}
+                                        >
+                                            {deletingId === image.id ? (
+                                                <Loader2 size={20} className="text-white animate-spin" />
+                                            ) : (
+                                                <Trash2 size={20} className="text-white" />
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 ) : (
-                    <div className="col-span-full text-center py-12">
+                    <div className="text-center py-12">
                         <p className="text-xl text-white">No images yet. Upload your first image!</p>
                     </div>
                 )}
