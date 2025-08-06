@@ -39,7 +39,17 @@ export default function SignIn() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0E0E0E] px-4">
-      <div className="w-full max-w-md p-8 space-y-8 bg-zinc-900/80 backdrop-blur-4xl rounded-xl border border-zinc-400/30 shadow-xl">
+      <div className="w-full max-w-md p-8 space-y-8 bg-zinc-900/80 backdrop-blur-4xl rounded-xl border border-zinc-400/30 shadow-xl relative">
+        {/* Back Button */}
+        <button
+          aria-label="Go back"
+          onClick={() => router.push('/')}
+          className="absolute top-4 left-4 p-2 rounded-full hover:bg-zinc-800/60 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 19L8 12L15 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
         <div className="text-center">
           <h1 className="text-3xl font-bold text-white">Sign In</h1>
           <p className="mt-2 text-zinc-400">Welcome back to Dump Anything</p>
