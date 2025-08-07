@@ -236,7 +236,7 @@ export default function JournalPage() {
           </div>
 
           <textarea
-            className='w-full h-64 p-4 bg-transparent border border-zinc-100/50 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+            className='w-full h-64 p-4 bg-transparent border border-zinc-100/50 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-zinc-300/90'
             placeholder="What's on your mind today?"
             value={entry}
             onChange={(e) => setEntry(e.target.value)}
