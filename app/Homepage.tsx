@@ -12,7 +12,7 @@ const Homepage = () => {
     {/* bg image */}
       <div className='w-full h-screen flex flex-col md:pt-64 pt-44 px-4 items-center relative'>
         <Image
-          src="/images/8.png"
+          src="/images/image.png"
           alt="Background"
           fill
           priority
