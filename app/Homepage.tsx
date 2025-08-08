@@ -73,6 +73,3 @@ const Homepage = () => {
 }
 
 export default Homepage
-
-
-// bg-gradient-to-bl from-zinc-200 via-blue-500 to-zinc-200 

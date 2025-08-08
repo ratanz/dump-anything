@@ -1,11 +1,14 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { FloatingDock } from '@/components/ui/floating-dock'
-import { HomeIcon, ImageIcon, FileIcon, SaveIcon, Loader2, Trash2Icon, XIcon, CheckIcon, SmileIcon } from 'lucide-react'
+import { HomeIcon, ImageIcon, FileIcon, Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { easeInOut, motion } from 'motion/react'
+import { MoodSelector } from './components/MoodSelector';
+import { JournalEntryForm } from './components/JournalEntryForm';
+import { JournalEntryList } from './components/JournalEntryList';
 
 interface JournalEntry {
   id: string;
@@ -201,64 +204,19 @@ export default function JournalPage() {
           </div>
 
           {/* Mood selector */}
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <button 
-                onClick={() => setShowMoodSelector(!showMoodSelector)}
-                className="flex items-center gap-1 text-zinc-300 hover:text-white transition-colors"
-              >
-                <SmileIcon size={18} />
-                <span>{selectedMood ? `Feeling: ${selectedMood}` : "How are you feeling?"}</span>
-              </button>
-            </div>
-            
-            {showMoodSelector && (
-              <div className="flex flex-wrap gap-2 p-2 bg-zinc-800/20 border border-zinc-300/20 backdrop-blur-md rounded-md mb-2">
-                {moodOptions.map(mood => (
-                  <button
-                    key={mood.name}
-                    onClick={() => {
-                      setSelectedMood(mood.name);
-                      setShowMoodSelector(false);
-                    }}
-                    className={`flex items-center gap-1 px-3 py-1 rounded-full transition-colors ${
-                      selectedMood === mood.name 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-zinc-700/30 border border-zinc-700/40 text-zinc-200 hover:bg-zinc-800 hover:cursor-pointer'
-                    }`}
-                  >
-                    <span>{mood.emoji}</span>
-                    <span>{mood.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <textarea
-            className='w-full h-64 p-4 bg-transparent border border-zinc-100/50 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-zinc-300/90'
-            placeholder="What's on your mind today?"
-            value={entry}
-            onChange={(e) => setEntry(e.target.value)}
+          <MoodSelector
+            moodOptions={moodOptions}
+            selectedMood={selectedMood}
+            setSelectedMood={setSelectedMood}
+            showMoodSelector={showMoodSelector}
+            setShowMoodSelector={setShowMoodSelector}
           />
-
-          <button
-            className='mt-4 flex items-center justify-center w-full gap-2 bg-transparent backdrop-blur-lg border border-zinc-100 text-zinc-100 px-6 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
-            onClick={handleSaveEntry}
-            disabled={isSaving || !entry.trim()}
-          >
-            {isSaving ? (
-              <>
-                <Loader2 size={18} className="animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <SaveIcon size={18} />
-                Save Entry
-              </>
-            )}
-          </button>
+          <JournalEntryForm
+            entry={entry}
+            setEntry={setEntry}
+            handleSaveEntry={handleSaveEntry}
+            isSaving={isSaving}
+          />
         </motion.div>
 
         {isLoading ? (
@@ -272,61 +230,17 @@ export default function JournalPage() {
             transition={{ duration: 0.5, delay: 0.7, ease: easeInOut }}
             className='bg-transparent backdrop-blur-3xl border border-zinc-300/10 rounded-lg shadow-lg p-6'>
             <h2 className='text-2xl font-medium text-white mb-4'>Previous Entries</h2>
-
-            <div className='flex flex-col gap-4 max-h-96 overflow-y-auto'>
-              {savedEntries.map((entry) => (
-                <div key={entry.id} className='border-b border-zinc-800 pb-4'>
-                  <div className='flex justify-between items-center mb-2'>
-                    <div className="flex items-center gap-2">
-                      <span className='font-medium text-zinc-300'>{formatDate(entry.date)}</span>
-                      {entry.mood && (
-                        <span className="px-2 py-0.5 bg-zinc-700/20 border border-zinc-300/10 rounded-full text-sm">
-                          {moodOptions.find(m => m.name === entry.mood)?.emoji || ''} {entry.mood}
-                        </span>
-                      )}
-                    </div>
-                    <div className='flex items-center gap-2 '>
-                      <span className='text-sm text-zinc-100'>{formatTime(entry.createdAt)}</span>
-
-                      {confirmDelete === entry.id ? (
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleDeleteEntry(entry.id)}
-                            disabled={isDeleting === entry.id}
-                            className='text-green-500 hover:text-green-400 transition-colors'
-                            aria-label="Confirm delete"
-                          >
-                            {isDeleting === entry.id ? (
-                              <Loader2 size={16} className="animate-spin" />
-                            ) : (
-                              <CheckIcon size={16} />
-                            )}
-                          </button>
-                          <button
-                            onClick={cancelDelete}
-                            className='text-red-500 hover:text-red-400 transition-colors'
-                            aria-label="Cancel delete"
-                          >
-                            <XIcon size={16} />
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => initiateDelete(entry.id)}
-                          className='text-zinc-100 hover:text-red-500 transition-colors'
-                          aria-label="Delete entry"
-                        >
-                          <Trash2Icon size={16} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <p className='text-zinc-400 whitespace-pre-wrap'>{entry.content}</p>
-                </div>
-              ))}
-              
-            </div>
+            <JournalEntryList
+              entries={savedEntries}
+              moodOptions={moodOptions}
+              confirmDelete={confirmDelete}
+              isDeleting={isDeleting}
+              initiateDelete={initiateDelete}
+              cancelDelete={cancelDelete}
+              handleDeleteEntry={handleDeleteEntry}
+              formatDate={formatDate}
+              formatTime={formatTime}
+            />
           </motion.div>
         ) : (
           <div className='bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-lg shadow-lg p-6 text-center'>
