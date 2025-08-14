@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react'
 import { FloatingDock } from '@/components/ui/floating-dock'
-import { HomeIcon, ImageIcon, FileIcon, UploadIcon, LinkIcon, AlertCircleIcon, CheckCircleIcon, Loader2, Trash2 } from 'lucide-react'
+import { HomeIcon, ImageIcon, FileIcon, QuoteIcon, UploadIcon, LinkIcon, AlertCircleIcon, CheckCircleIcon, Loader2, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { validateImageFile, isValidImageUrl, playClickSound } from '@/app/lib/utils'
 import { easeInOut, motion, AnimatePresence } from 'motion/react'
@@ -967,6 +967,7 @@ export default function ImagePage() {
                     { title: "Home", icon: <HomeIcon />, href: "/" },
                     { title: "Image", icon: <ImageIcon />, href: "/image" },
                     { title: "Journal", icon: <FileIcon />, href: "/journal" },
+                    { title: "Quotes", icon: <QuoteIcon />, href: "/quotes" },
                 ]} />
             </div>
         </div>

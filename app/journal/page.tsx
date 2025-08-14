@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { FloatingDock } from '@/components/ui/floating-dock'
-import { HomeIcon, ImageIcon, FileIcon, Loader2 } from 'lucide-react'
+import { HomeIcon, ImageIcon, FileIcon, QuoteIcon, Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -255,6 +255,7 @@ export default function JournalPage() {
           { title: "Home", icon: <HomeIcon />, href: "/" },
           { title: "Image", icon: <ImageIcon />, href: "/image" },
           { title: "Journal", icon: <FileIcon />, href: "/journal" },
+          { title: "Quotes", icon: <QuoteIcon />, href: "/quotes" },
         ]} />
       </div>
     </div>

@@ -2,7 +2,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { FloatingDock } from '@/components/ui/floating-dock'
-import { HomeIcon, ImageIcon, FileIcon } from 'lucide-react'
+import { HomeIcon, ImageIcon, FileIcon, QuoteIcon } from 'lucide-react'
 import { motion } from "motion/react"
 
 const Homepage = () => {
@@ -65,6 +65,7 @@ const Homepage = () => {
             { title: "Home", icon: <HomeIcon />, href: "/" },
             { title: "Image", icon: <ImageIcon />, href: "/image" },
             { title: "Journal", icon: <FileIcon />, href: "/journal" },
+            { title: "Quotes", icon: <QuoteIcon />, href: "/quotes" },
           ]} />
         </div>
       </div>
