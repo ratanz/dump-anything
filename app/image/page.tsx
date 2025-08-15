@@ -904,6 +904,7 @@ export default function ImagePage() {
                                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                         />
                                     </div>
+                                    {/* delete button */}
                                     <div className="delete-button">
                                         <button 
                                             className="p-2 rounded-full hover:bg-red-600/80 cursor-pointer transition-all"
