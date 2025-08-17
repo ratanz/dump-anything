@@ -18,7 +18,8 @@ const Navbar = () => {
   const navigationLinks = [
     { name: "Home", path: "/" },
     { name: "Image", path: "/image" },
-    { name: "Journal", path: "/journal" }
+    { name: "Journal", path: "/journal" },
+    { name: "Quotes", path: "/quotes" }
   ];
 
   useEffect(() => {

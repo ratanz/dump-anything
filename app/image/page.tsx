@@ -47,7 +47,7 @@ export default function ImagePage() {
         const config = {
             SCROLL_SPEED: 1.75,
             LERP_FACTOR: 0.05,
-            MAX_VELOCITY: 150,
+            MAX_VELOCITY: 200,
         };
 
         const state = {
@@ -113,7 +113,7 @@ export default function ImagePage() {
                     // Reset the transition state after a short delay
                     setTimeout(() => {
                         isLoopTransitioning = false;
-                    }, 50);
+                    }, 10);
                     
                 } else if (state.currentX < -state.sequenceWidth * 1.75) {
                     // If scrolled too far to the left, jump forward without animation
@@ -136,7 +136,7 @@ export default function ImagePage() {
                     // Reset the transition state after a short delay
                     setTimeout(() => {
                         isLoopTransitioning = false;
-                    }, 50);
+                    }, 10);
                 }
             }
             
