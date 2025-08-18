@@ -566,7 +566,6 @@ export default function ImagePage() {
         exit: { opacity: 0, y: 30, transition: { duration: 0.3, ease: easeInOut }}
     }
     
-    
 
     // CSS styles for the parallax slider
     const sliderStyles = `
