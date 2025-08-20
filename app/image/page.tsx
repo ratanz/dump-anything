@@ -1,16 +1,14 @@
 'use client'
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { FloatingDock } from '@/components/ui/floating-dock'
-import { HomeIcon, ImageIcon, FileIcon, QuoteIcon, UploadIcon, LinkIcon, AlertCircleIcon, CheckCircleIcon, Loader2, Trash2 } from 'lucide-react'
-import Image from 'next/image'
+import { HomeIcon, ImageIcon, FileIcon, QuoteIcon, UploadIcon, LinkIcon, AlertCircleIcon, CheckCircleIcon, Loader2 } from 'lucide-react'
 import { playClickSound } from '@/app/lib/utils'
 import { easeInOut, motion, AnimatePresence } from 'motion/react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import styles from './slider.module.css';
-import { useParallaxSlider } from './hooks/useParallaxSlider';
-import { useImageUpload } from './hooks/useImageUpload';
+import { useImageUpload } from './hooks/useImageUpload'
+import ImageSlider from './components/ImageSlider'
 
 interface ImageData {
     id: string;
@@ -26,7 +24,7 @@ export default function ImagePage() {
     const [images, setImages] = useState<ImageData[]>([]);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [loading, setLoading] = useState(false); // Local loading for fetchImages
-    const sliderRef = useRef<HTMLDivElement | null>(null);
+    
     const {
         uploadStatus,
         imageUrl,
@@ -42,11 +40,10 @@ export default function ImagePage() {
         handleUrlUpload,
         setUploadStatus,
     } = useImageUpload(setImages);
+    
     const [isClient, setIsClient] = useState(false);
     const { data: session, status } = useSession();
     const router = useRouter();
-
-    useParallaxSlider(sliderRef, images);
 
     // Memoized buttonVariants
     const buttonVariants = useMemo(() => ({
@@ -182,11 +179,9 @@ export default function ImagePage() {
         <>
         <div className='w-full min-h-screen flex flex-col items-center bg-gradient-to-br from-black via-zinc-900 to-black lg:pt-18 pt-14'>
             
-
             {/* Upload Button */}
             <motion.div
                 className="fixed right-[37vw] bottom-6 z-10 hover:scale-110 transition-all duration-300 ease-in-out cursor-pointer"
-               
             >
                 <button 
                     onClick={() => {
@@ -342,58 +337,14 @@ export default function ImagePage() {
             )}
             </AnimatePresence>
 
-            {/* Parallax Image Slider */}
+            {/* Image Slider */}
             <div className="w-full max-w-8xl p-4 px-8">
-                {loading ? (
-                    <div className="text-center py-12">
-                        <Loader2 className="h-10 w-10 text-blue-500 animate-spin mx-auto" />
-                        <p className="mt-4 text-white">Loading images...</p>
-                    </div>
-                ) : images.length > 0 ? (
-                    <div className={styles.slider} ref={sliderRef}>
-                        <div className="slide-track">
-                            {[0, 1, 2].map((dup) =>
-                                images.map((image) => (
-                                    <div
-                                        key={`${dup}-${image.id}`}
-                                        className="slide relative flex-shrink-0 w-[350px] h-[500px] mx-5 rounded-2xl overflow-visible cursor-grab shadow-lg transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] origin-center top-1/2 -translate-y-1/2 group"
-                                    >
-                                        <div className="relative w-full h-full overflow-hidden rounded-2xl">
-                                            <Image
-                                                src={image.url}
-                                                alt={image.fileName || 'Image'}
-                                                fill
-                                                className="object-cover"
-                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                                priority
-                                            />
-                                        </div>
-                                        <div className="absolute bottom-4 right-4 opacity-0 translate-y-2 transition-all duration-300 ease-in z-20 group-hover:opacity-100 group-hover:translate-y-0">
-                                            <button
-                                                className="p-2 rounded-full hover:bg-red-600/80 cursor-pointer transition-all"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDeleteImage(image.id);
-                                                }}
-                                                disabled={deletingId === image.id}
-                                            >
-                                                {deletingId === image.id ? (
-                                                    <Loader2 size={20} className="text-white animate-spin" />
-                                                ) : (
-                                                    <Trash2 size={20} className="text-white" />
-                                                )}
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="text-center py-12">
-                        <p className="text-xl text-white">No images yet. Upload your first image!</p>
-                    </div>
-                )}
+                <ImageSlider 
+                    images={images}
+                    loading={loading}
+                    deletingId={deletingId}
+                    onDeleteImage={handleDeleteImage}
+                />
             </div>
 
             <div className='dock fixed bottom-4'>
@@ -407,4 +358,4 @@ export default function ImagePage() {
         </div>
         </>
     )
-} 
+}
