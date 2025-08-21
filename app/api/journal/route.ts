@@ -120,7 +120,7 @@ export async function POST(request: Request) {
     // and remove the mood marker from the content for immediate display
     const returnEntry = {
       ...entry,
-      content: content, // Use the original content without the mood marker
+      content: content, 
       mood: mood || null
     };
 
