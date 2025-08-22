@@ -117,7 +117,6 @@ export async function POST(request: Request) {
     });
 
     // Add the mood to the returned entry for the frontend
-    // and remove the mood marker from the content for immediate display
     const returnEntry = {
       ...entry,
       content: content, 
