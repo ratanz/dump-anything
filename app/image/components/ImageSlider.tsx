@@ -5,16 +5,7 @@ import { Loader2, Trash2 } from 'lucide-react'
 
 import styles from '../slider.module.css';
 import { useParallaxSlider } from '../hooks/useParallaxSlider'
-
-interface ImageData {
-    id: string;
-    url: string;
-    fileName: string | null;
-    s3Key?: string | null;
-    fileSize?: number | null;
-    mimeType?: string | null;
-    createdAt: string;
-}
+import type { ImageData } from "@/types/image";
 
 interface ImageSliderProps {
     images: ImageData[];

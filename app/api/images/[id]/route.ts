@@ -1,47 +1,39 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/app/lib/prisma';
-import { deleteFileFromS3 } from '@/app/lib/s3';
+import { NextResponse } from "next/server";
+import prisma from "@/app/lib/prisma";
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+// Next.js provides params as a Promise in strict mode types
+type RouteContext = { params: Promise<{ id: string }> };
+
+// GET /api/images/[id]
+export async function GET(req: Request, { params }: RouteContext) {
+  const { id } = await params;
+
   try {
-    const id = params.id;
-
-    // First, get the image to retrieve S3 info
-    const image = await prisma.image.findUnique({
-      where: { id },
-    });
-
+    const image = await prisma.image.findUnique({ where: { id } });
     if (!image) {
-      return NextResponse.json(
-        { error: 'Image not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
-
-    // Delete from S3 if it has an S3 key
-    if (image.s3Key) {
-      try {
-        await deleteFileFromS3(image.s3Key);
-      } catch (s3Error) {
-        console.error('Error deleting from S3:', s3Error);
-      }
-    }
-    // Continue with database deletion even if S3 deletion fails
-
-    // Delete from database
-    await prisma.image.delete({
-      where: { id },
-    });
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json(image, { status: 200 });
   } catch (error) {
-    console.error('Error deleting image:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete image' },
-      { status: 500 }
-    );
+    console.error("GET error:", error);
+    return NextResponse.json({ error: "Failed to fetch image" }, { status: 500 });
   }
-} 
+}
+
+// DELETE /api/images/[id]
+export async function DELETE(req: Request, { params }: RouteContext) {
+  const { id } = await params;
+
+  try {
+    const existing = await prisma.image.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Image not found" }, { status: 404 });
+    }
+
+    await prisma.image.delete({ where: { id } });
+    return NextResponse.json({ success: true, id }, { status: 200 });
+  } catch (error) {
+    console.error("DELETE error:", error);
+    return NextResponse.json({ error: "Failed to delete image" }, { status: 500 });
+  }
+}

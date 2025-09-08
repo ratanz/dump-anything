@@ -36,8 +36,8 @@ export async function GET() {
       },
     });
 
-    // Process entries to extract mood from content
-    const processedEntries = entries.map(entry => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const processedEntries = entries.map((entry: any) => {
       let mood = null;
       let content = entry.content;
       

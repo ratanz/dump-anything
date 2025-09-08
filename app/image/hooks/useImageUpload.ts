@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { validateImageFile, isValidImageUrl } from '@/app/lib/utils';
 import { useSession } from 'next-auth/react';
+import type { ImageData } from "@/types/image";
 
 export function useImageUpload(setImages: (cb: (prev: ImageData[]) => ImageData[]) => void) {
     const [loading, setLoading] = useState(false);

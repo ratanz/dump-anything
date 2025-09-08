@@ -1,4 +1,5 @@
 import { useEffect, RefObject } from 'react';
+import type { ImageData } from "@/types/image";
 
 export function useParallaxSlider(sliderRef: RefObject<HTMLDivElement | null>, images: ImageData[]) {
     useEffect(() => {
