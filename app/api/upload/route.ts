@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/app/lib/prisma';
-import { v4 as uuidv4 } from 'uuid';
+
 import { validateImageFile, isValidImageUrl } from '@/app/lib/utils';
 import { uploadFileToS3 } from '@/app/lib/s3';
-import { auth } from '../auth/[...nextauth]/route';
+import { auth } from '@/auth';
+
+
 
 export async function POST(request: Request) {
   try {
@@ -73,7 +75,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 });
     }
 
-    // Store in database with user ID
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const imageData: any = {
       url,
       fileName,

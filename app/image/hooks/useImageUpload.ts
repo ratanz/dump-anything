@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react';
-import { validateImageFile, isValidImageUrl, playClickSound } from '@/app/lib/utils';
+import { validateImageFile, isValidImageUrl } from '@/app/lib/utils';
 import { useSession } from 'next-auth/react';
 
-export function useImageUpload(setImages: (cb: any) => void) {
+export function useImageUpload(setImages: (cb: (prev: ImageData[]) => ImageData[]) => void) {
     const [loading, setLoading] = useState(false);
     const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
     const [imageUrl, setImageUrl] = useState('');
@@ -32,7 +32,7 @@ export function useImageUpload(setImages: (cb: any) => void) {
             });
             if (response.ok) {
                 const data = await response.json();
-                setImages((prev: any) => [data.image, ...prev]);
+                setImages((prev: ImageData[]) => [data.image, ...prev]);
                 setUploadStatus('success');
                 setTimeout(() => setShowUploadModal(false), 2000);
                 if (fileInputRef.current) fileInputRef.current.value = '';
@@ -41,7 +41,7 @@ export function useImageUpload(setImages: (cb: any) => void) {
                 setError(errorData.error || 'Upload failed');
                 setUploadStatus('error');
             }
-        } catch (error) {
+        } catch {
             setError('Upload failed. Please try again.');
             setUploadStatus('error');
         } finally {
@@ -72,7 +72,7 @@ export function useImageUpload(setImages: (cb: any) => void) {
             });
             if (response.ok) {
                 const data = await response.json();
-                setImages((prev: any) => [data.image, ...prev]);
+                setImages((prev: ImageData[]) => [data.image, ...prev]);
                 setImageUrl('');
                 setUploadStatus('success');
                 setTimeout(() => setShowUploadModal(false), 2000);
@@ -81,7 +81,7 @@ export function useImageUpload(setImages: (cb: any) => void) {
                 setError(errorData.error || 'Upload failed');
                 setUploadStatus('error');
             }
-        } catch (error) {
+        } catch {
             setError('Upload failed. Please try again.');
             setUploadStatus('error');
         } finally {

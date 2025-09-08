@@ -15,7 +15,7 @@
     cursor: grabbing;
 }
 
-:global(.slide-track) {
+.slider :global(.slide-track) {
     display: flex;
     position: absolute;
     will-change: transform;
@@ -74,7 +74,7 @@
 }
 
 /* CSS variable for slider state */
-:root {
+.slider :root {
     --slider-moving: 0;
 }
 

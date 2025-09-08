@@ -1,6 +1,6 @@
 import { useEffect, RefObject } from 'react';
 
-export function useParallaxSlider(sliderRef: RefObject<HTMLDivElement | null>, images: any[]) {
+export function useParallaxSlider(sliderRef: RefObject<HTMLDivElement | null>, images: ImageData[]) {
     useEffect(() => {
         if (!sliderRef.current || images.length === 0) return;
 

@@ -4,7 +4,7 @@ import { FloatingDock } from '@/components/ui/floating-dock'
 import { HomeIcon, ImageIcon, FileIcon, QuoteIcon, Copy, Trash2, Loader2, Plus } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { easeInOut, motion, AnimatePresence } from 'motion/react'
+import { easeInOut, motion } from 'motion/react'
 
 interface QuoteItem {
   id: string;

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/app/lib/prisma';
-import { deleteFileFromS3, getKeyFromUrl } from '@/app/lib/s3';
+import { deleteFileFromS3 } from '@/app/lib/s3';
 
 export async function DELETE(
   request: Request,

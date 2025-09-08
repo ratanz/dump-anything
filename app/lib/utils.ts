@@ -59,7 +59,7 @@ export const isValidImageUrl = (url: string) => {
       pathname.endsWith('.png') ||
       pathname.endsWith('.gif') ||
       pathname.endsWith('.webp');
-  } catch (e) {
+  } catch {
     return false;
   }
 };

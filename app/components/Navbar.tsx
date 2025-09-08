@@ -6,7 +6,7 @@ import { signOut, useSession } from 'next-auth/react';
 import { User, LogOut, LogIn } from 'lucide-react';
 import Link from 'next/link';
 import 'remixicon/fonts/remixicon.css'
-import { easeInOut, motion, stagger, AnimatePresence } from 'motion/react'
+import { easeInOut, motion, AnimatePresence } from 'motion/react'
 
 const Navbar = () => {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);

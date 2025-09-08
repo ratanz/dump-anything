@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '../auth/[...nextauth]/route';
+import { auth } from '@/auth'
 import prisma from '@/app/lib/prisma';
 
 // GET: fetch all quotes for logged-in user
