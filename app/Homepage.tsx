@@ -9,17 +9,8 @@ const Homepage = () => {
 
   return (
     <>
-    {/* bg image */}
-      <div className='w-full h-screen flex flex-col md:pt-64 pt-44 px-4 items-center relative'>
-        <Image
-          src="/images/image.png"
-          alt="Background"
-          fill
-          priority
-          className="object-cover z-0"
-          quality={100}
-        />
-
+      <div className='main w-full h-screen flex flex-col md:pt-64 pt-44 px-4 items-center bg-gradient-to-tl from-black to-zinc-900'>
+  
 
         <div className="text-container h-fit leading-tight relative z-10">
               {"A place to dump".split("").map((char, index) => (
