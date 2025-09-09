@@ -1,6 +1,5 @@
 'use client'
 import React from 'react'
-import Image from 'next/image'
 import { FloatingDock } from '@/components/ui/floating-dock'
 import { HomeIcon, ImageIcon, FileIcon, QuoteIcon } from 'lucide-react'
 import { motion } from "motion/react"

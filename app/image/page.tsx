@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { FloatingDock } from '@/components/ui/floating-dock'
-import { HomeIcon, ImageIcon, FileIcon, QuoteIcon, UploadIcon, LinkIcon, AlertCircleIcon, CheckCircleIcon, Loader2 } from 'lucide-react'
+import { HomeIcon, ImageIcon, FileIcon, QuoteIcon, UploadIcon, AlertCircleIcon, CheckCircleIcon, Loader2 } from 'lucide-react'
 import { playClickSound } from '@/app/lib/utils'
 import { easeInOut, motion, AnimatePresence } from 'motion/react'
 import { useSession } from 'next-auth/react'
