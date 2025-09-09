@@ -31,12 +31,8 @@ export default function ImagePage() {
         setImageUrl,
         showUploadModal,
         setShowUploadModal,
-        uploadType,
-        setUploadType,
         error,
         setError,
-        fileInputRef,
-        handleFileUpload,
         handleUrlUpload,
         setUploadStatus,
     } = useImageUpload(setImages);
@@ -137,15 +133,20 @@ export default function ImagePage() {
         }
     }, [session, fetchImages]);
 
-    // Reset upload status after success
+    // Reset upload status and close modal after success
     useEffect(() => {
         if (uploadStatus === 'success') {
             const timer = setTimeout(() => {
                 setUploadStatus('idle');
-            }, 3000);
+                setShowUploadModal(false);
+                setImageUrl('');
+                setError(null);
+                // Refresh images to ensure smooth display
+                fetchImages();
+            }, 2000);
             return () => clearTimeout(timer);
         }
-    }, [uploadStatus, setUploadStatus]);
+    }, [uploadStatus, setUploadStatus, setShowUploadModal, setImageUrl, setError, fetchImages]);
 
     // Show loading state while checking authentication
     if (status === 'loading' || !isClient) {
@@ -187,6 +188,7 @@ export default function ImagePage() {
                     onClick={() => {
                         setError(null);
                         setUploadStatus('idle');
+                        setImageUrl('');
                         setShowUploadModal(true);
                         playClickSound();
                     }}
@@ -229,98 +231,33 @@ export default function ImagePage() {
                             </div>
                         )}
                         
-                        <div className="flex gap-4 mb-6">
-                            <motion.button 
-                                initial={{ opacity: 0, x: -30 }}
-                                animate={{ opacity: 1, x: 0, transition: { duration: 0.5, delay: 0.2, ease: easeInOut }}}
-                                exit={{ opacity: 0, x: -30, transition: { duration: 0.3, ease: easeInOut }}}
-                                className={`flex-1 p-4 rounded-md flex items-center justify-center gap-2 font-medium ${uploadType === 'file' ? ' text-blue-400 border-2 border-blue-500' : 'bg-transparent backdrop-blur-3xl border border-zinc-300/50 hover:bg-zinc-950/20 cursor-pointer'}`}
-                                onClick={() => {
-                                    setUploadType('file');
-                                    setError(null);
-                                }}
+                        <form 
+                            onSubmit={handleUrlUpload} className="mb-3">
+                            <motion.input 
+                                initial={{ opacity: 0, y: 30 }}
+                                animate={{ opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.2, ease: easeInOut }}}
+                                exit={{ opacity: 0, y: 30, transition: { duration: 0.3, ease: easeInOut }}}
+                                type="url" 
+                                value={imageUrl}
+                                onChange={(e) => setImageUrl(e.target.value)}
+                                placeholder="Paste image URL here"
+                                className="w-full p-4 text-lg border-2 border-zinc-300/50 rounded-md mb-8 focus:outline-none focus-within:border-blue-500"
+                                required
                                 disabled={uploadStatus === 'uploading'}
-                            >
-                                <UploadIcon size={20} />
-                                <span>Upload File</span>
-                            </motion.button>
-                            <motion.button 
-                                initial={{ opacity: 0, x: 30 }}
-                                animate={{ opacity: 1, x: 0, transition: { duration: 0.5, delay: 0.2, ease: easeInOut }}}
-                                exit={{ opacity: 0, x: 30, transition: { duration: 0.3, ease: easeInOut }}}
-                                className={`flex-1 p-4 rounded-md flex items-center justify-center gap-2 font-medium ${uploadType === 'url' ? 'text-blue-400 border-2 border-blue-500' : 'bg-transparent backdrop-blur-3xl border border-zinc-300/50 hover:bg-zinc-950/20 cursor-pointer'}`}
-                                onClick={() => {
-                                    setUploadType('url');
-                                    setError(null);
-                                }}
+                            />
+                            <button 
+                                type="submit"
                                 disabled={uploadStatus === 'uploading'}
+                                className={`w-full bg-transparent backdrop-blur-3xl border border-zinc-300/50 hover:bg-zinc-950/20 cursor-pointer p-3 rounded-md font-medium text-md transition-colors ${uploadStatus === 'uploading' ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                                <LinkIcon size={20} />
-                                <span>Image URL</span>
-                            </motion.button>
-                        </div>
-                        
-                        {uploadType === 'file' ? (
-                            <div className="mb-6">
-                                <input 
-                                    type="file" 
-                                    ref={fileInputRef}
-                                    onChange={handleFileUpload}
-                                    accept="image/jpeg,image/png,image/gif,image/webp"
-                                    className="hidden"
-                                    id="file-upload"
-                                    disabled={uploadStatus === 'uploading'}
-                                />
-                                <motion.label 
-                                    initial={{ opacity: 0, y: 30 }}
-                                    animate={{ opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.2, ease: easeInOut }}}
-                                    exit={{ opacity: 0, y: 30, transition: { duration: 0.3, ease: easeInOut }}}
-                                    htmlFor="file-upload"
-                                    className={`block w-full p-12 border-2 border-zinc-300/50 rounded-lg text-center cursor-pointer hover:bg-zinc-950/20 transition-colors ${uploadStatus === 'uploading' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                    {uploadStatus === 'uploading' ? (
-                                        <>
-                                            <Loader2 size={36} className="mx-auto mb-3 text-blue-400 animate-spin" />
-                                            <p className="text-lg font-medium text-gray-100">Uploading...</p>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <UploadIcon size={36} className="mx-auto mb-3 text-blue-400" />
-                                            <p className="text-lg font-medium text-gray-100">Click to select an image</p>
-                                            <p className="text-sm text-gray-400 mt-2">PNG, JPG, GIF up to 10MB</p>
-                                        </>
-                                    )}
-                                </motion.label>
-                            </div>
-                        ) : (
-                            <form 
-                                onSubmit={handleUrlUpload} className="mb-3">
-                                <motion.input 
-                                    initial={{ opacity: 0, y: 30 }}
-                                    animate={{ opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.2, ease: easeInOut }}}
-                                    exit={{ opacity: 0, y: 30, transition: { duration: 0.3, ease: easeInOut }}}
-                                    type="url" 
-                                    value={imageUrl}
-                                    onChange={(e) => setImageUrl(e.target.value)}
-                                    placeholder="Paste image URL here"
-                                    className="w-full p-4 text-lg border-2 border-zinc-300/50 rounded-md mb-8 focus:outline-none focus-within:border-blue-500"
-                                    required
-                                    disabled={uploadStatus === 'uploading'}
-                                />
-                                <button 
-                                    type="submit"
-                                    disabled={uploadStatus === 'uploading'}
-                                    className={`w-full bg-transparent backdrop-blur-3xl border border-zinc-300/50 hover:bg-zinc-950/20 cursor-pointer p-3 rounded-md font-medium text-md transition-colors ${uploadStatus === 'uploading' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                    {uploadStatus === 'uploading' ? (
-                                        <div className="flex items-center justify-center gap-2">
-                                            <Loader2 size={20} className="animate-spin" />
-                                            <span>Uploading...</span>
-                                        </div>
-                                    ) : 'Upload'}
-                                </button>
-                            </form>
-                        )}
+                                {uploadStatus === 'uploading' ? (
+                                    <div className="flex items-center justify-center gap-2">
+                                        <Loader2 size={20} className="animate-spin" />
+                                        <span>Uploading...</span>
+                                    </div>
+                                ) : 'Upload'}
+                            </button>
+                        </form>
                         
                         <motion.button 
                             initial={{ opacity: 0, y: 30 }}
